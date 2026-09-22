@@ -1,0 +1,190 @@
+<title>Fiche terrain — Rolling Shutter</title>
+<style>
+  /* Même parti pris que l'appli de mesure : cette fiche se consulte dans le
+     noir, à côté du montage. Une page claire détruirait l'adaptation
+     nocturne et éclairerait la scène photographiée. Aucune police distante,
+     aucune bibliothèque — elle doit s'ouvrir sans réseau. */
+  :root{
+    --fond:#0d0b0a; --fond2:#17130f; --bord:#2f2620;
+    --texte:#e8ded4; --faible:#9c8d7e; --ambre:#ff9f45;
+    --bon:#7fb069; --mauvais:#d6604d;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--texte);
+       font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%}
+  .page{max-width:680px;margin:0 auto;padding:18px 15px 70px}
+  h1{font-size:1.3rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+  .sous{color:var(--faible);font-size:.86rem;margin:0 0 22px}
+  h2{font-size:.76rem;text-transform:uppercase;letter-spacing:.09em;
+     color:var(--ambre);margin:30px 0 10px;font-weight:600}
+  .carte{background:var(--fond2);border:1px solid var(--bord);
+         border-radius:9px;padding:14px;margin-bottom:10px}
+  .cle{border-left:3px solid var(--ambre);padding-left:12px;margin:14px 0}
+  .cle b{color:var(--ambre)}
+  .oui{color:var(--bon);font-weight:600}
+  .non{color:var(--mauvais);font-weight:600}
+  ol{padding-left:20px;margin:0}
+  ol li{margin-bottom:14px}
+  ol li > b{color:var(--texte)}
+  .note{color:var(--faible);font-size:.85rem;margin-top:7px}
+  table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:8px;
+        font-family:var(--mono)}
+  th,td{text-align:left;padding:6px 5px;border-bottom:1px solid var(--bord)}
+  th{color:var(--faible);font-weight:500;font-size:.72rem;
+     text-transform:uppercase;letter-spacing:.05em}
+  td.n{text-align:right}
+  code{font-family:var(--mono);background:#1d1711;padding:1px 5px;
+       border-radius:4px;color:var(--ambre);font-size:.86em}
+  .gros{font-size:1.06rem}
+</style>
+
+<div class="page">
+
+<h1>Fiche terrain — Rolling Shutter</h1>
+<p class="sous">Mesurer un appareil dont on ne connaît pas les menus.</p>
+
+<h2>Le contrôle qui remplace tout le reste</h2>
+<div class="carte">
+  <p class="gros" style="margin:0 0 10px"><b>Prenez une photo, relisez-la sur
+  l'écran de l'appareil, zoomez sur la boule.</b></p>
+  <p style="margin:0 0 6px"><span class="oui">Des rayures</span> en travers de
+  la tache → la pose est assez courte. Continuez, la série sera exploitable.</p>
+  <p style="margin:0"><span class="non">Une tache uniforme</span> → pose trop
+  longue. Inutile de prendre quarante photos, elles seront toutes perdues.</p>
+  <p class="note">À 2 ms de cadence, une quinzaine de bandes traversent la
+  tache : c'est visible à l'œil nu sur un écran de deux pouces. Ce contrôle ne
+  dépend ni du modèle ni du menu, et coûte dix secondes. Cinq séances ont été
+  perdues le premier soir faute de pouvoir vérifier quoi que ce soit avant de
+  rentrer.</p>
+</div>
+
+<h2>Les réglages, par ordre d'importance</h2>
+
+<ol>
+  <li>
+    <b>La sensibilité MINIMALE, poussée au maximum offert.</b>
+    <div class="cle">
+      <b>C'est le réglage décisif, et le moins évident.</b> L'appareil a le
+      choix entre plusieurs couples pose/sensibilité qui exposent autant —
+      1/120 s à ISO 172 ou 1/560 s à ISO 800 — et il préfère spontanément le
+      premier, le seul qui ne serve à rien ici. Lui interdire de descendre
+      sous la sensibilité maximale ne lui laisse que l'obturateur.
+    </div>
+    <p class="note">Noms rencontrés : « ISO Min », « ISO Minimum », « Limite
+    ISO basse ». Mettez le <b>minimum ET le maximum</b> sur la valeur la plus
+    haute. Le bruit ne gêne pas : on cherche une périodicité, pas une belle
+    image.</p>
+  </li>
+
+  <li>
+    <b>Le mode PHOTO SIMPLE.</b> Pas la rafale, pas l'intervallomètre, pas le
+    mode nuit.
+    <p class="note">Sur une HERO4, l'intervallomètre plafonne l'obturation à
+    1/30 s quoi qu'on règle : sur 291 photos elle n'est jamais descendue plus
+    bas, l'appareil préférant baisser la sensibilité. Rien ne l'indique dans
+    les menus. <b>Vérification sans menu :</b> le nom des fichiers —
+    <code>GOPR1234.JPG</code> est une photo simple,
+    <code>G0071234.JPG</code> appartient à une série groupée.</p>
+  </li>
+
+  <li>
+    <b>La mesure spot.</b>
+    <p class="note">Elle fait exposer pour le centre du cadre — la boule — et
+    non pour la pièce sombre autour. Si l'appareil ne l'offre pas, ce n'est pas
+    rédhibitoire : une boule qui remplit la moitié du cadre domine même une
+    mesure moyenne.</p>
+  </li>
+
+  <li>
+    <b>La correction d'exposition à −2,0.</b>
+    <p class="note">Deux diaphragmes, gratuits, présents sur tous les
+    modèles.</p>
+  </li>
+
+  <li>
+    <b>Couper tout traitement multi-images.</b> SuperPhoto, HDR, réduction de
+    bruit avancée, « Sortie » autre que standard.
+    <p class="note">Ces modes <b>fusionnent plusieurs poses</b>. L'image
+    mélange alors des instants différents du clignotement : les bandes s'y
+    brouillent et la mesure devient fausse <b>sans que rien ne le signale</b>.
+    C'est le piège le plus dangereux, parce qu'il ne se voit pas.</p>
+  </li>
+</ol>
+
+<h2>Le montage, identique pour tous les appareils</h2>
+<div class="carte">
+  <p style="margin:0 0 8px">La <b>plus grosse boule diffusante</b> dont vous
+  disposez, LED à l'intérieur, à trois ou cinq centimètres de l'objectif,
+  remplissant au moins la moitié du cadre. Elle sera floue : sans importance,
+  on cherche une alternance clair/sombre, pas une image nette.</p>
+  <table>
+    <thead><tr><th>montage</th><th class="n">pose la + courte</th><th class="n">exploitables</th></tr></thead>
+    <tbody>
+      <tr><td>boule ≈ 35 mm</td><td class="n" style="color:var(--bon)">1/1427 s</td><td class="n">51 / 60</td></tr>
+      <tr><td>petit plastique</td><td class="n">1/421 s</td><td class="n">2 / 74</td></tr>
+      <tr><td>LED nue</td><td class="n">1/457 s</td><td class="n">0 / 62</td></tr>
+    </tbody>
+  </table>
+  <p class="note">La boule gagne trois diaphragmes. <b>C'est la surface
+  éclairée qui commande l'exposition, pas la brillance du point le plus
+  vif</b> : la mesure spot fait une moyenne sur sa zone, et un point vif perdu
+  dans du noir donne une moyenne basse. La LED nue ne couvrait que 1 % de la
+  hauteur du cadre.</p>
+  <p class="note"><b>Noir complet autour.</b> Ruban adhésif opaque sur la LED
+  d'alimentation de la carte, ses LED de communication et les témoins de la
+  batterie : ces lumières-là ne clignotent pas au rythme de la mesure et
+  remplissent les bandes sombres. Carte Arduino <b>hors de la boîte</b>.</p>
+</div>
+
+<h2>Le déroulé, par appareil</h2>
+<div class="carte">
+  <ol>
+    <li>Réglages ci-dessus, autant qu'on les trouve.
+      <p class="note" style="margin-top:4px">La carte balaie quatre cadences de
+      15 s chacune, cycle de 60 s. Elle repart du début à chaque mise sous
+      tension.</p></li>
+    <li><b>Une photo d'essai, relue à l'écran, zoomée.</b> Des rayures ? On
+      continue. Pas de rayures ? On revoit le réglage 1, puis le 2.</li>
+    <li>Une photo toutes les deux ou trois secondes pendant <b>deux
+      minutes</b> — une fois et demie le cycle, pour traverser les quatre
+      cadences quel que soit l'instant du départ.</li>
+    <li>Appareil suivant.</li>
+  </ol>
+  <p class="note"><b>Rien à noter, rien à compter.</b> Les photos portent le
+  modèle dans leur EXIF et l'analyse les sépare seule ; les quatre cadences,
+  sans rapport harmonique entre elles, sont retrouvées par le calcul.</p>
+</div>
+
+<h2>Au retour</h2>
+<div class="carte">
+  <p style="margin:0 0 8px">Sur le PC : glissez le dossier de photos sur
+  <code>MESURER.bat</code>. Sur le téléphone : ouvrez
+  <code>banc_terrain.html</code> depuis le gestionnaire de fichiers — elle
+  fonctionne hors ligne et sépare les appareils par leur signature EXIF.</p>
+  <div class="cle">
+    <b>Ce qui vaut preuve, c'est l'accord entre cadences</b>, pas le chiffre
+    lui-même. Le temps de lecture est une propriété du capteur : il ne peut pas
+    dépendre de la cadence de la LED. Quatre cadences qui donnent la même
+    valeur à quelques pour cent près ne peuvent pas concorder par hasard. Une
+    seule cadence exploitable ne prouve rien, et le programme le dit plutôt que
+    d'affirmer.
+  </div>
+  <p class="note"><b>À refaire par appareil ET par mode.</b> Le temps de
+  lecture change avec la résolution, le recadrage et le regroupement de pixels.
+  La valeur mesurée ne vaut que pour le mode employé — c'est-à-dire, en
+  pratique, celui qu'on utilisera en vol.</p>
+</div>
+
+<h2>Référence — HERO4 Silver, photo 12 Mpx</h2>
+<div class="carte">
+  <p style="margin:0"><b class="gros" style="color:var(--ambre)">26,9 ms
+  ± 0,2 ms</b><br>
+  <span class="note">Deux séries indépendantes, 138 photos, huit
+  déterminations de cadence entre 26,79 et 27,22 ms.<br>
+  <code>--rolling-shutter-readout 27</code><br>
+  Le <code>vol.json</code> portait 15 ms, valeur de table jamais mesurée.</span></p>
+</div>
+
+</div>

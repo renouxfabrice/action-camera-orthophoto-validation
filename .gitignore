@@ -1,0 +1,8 @@
+# Sauvegardes de travail : elles n'ont pas a etre publiees.
+*.avant_*
+*.bak
+__pycache__/
+*.pyc
+
+# Journaux ecrits par les programmes a l'execution.
+src/journal_mesures.csv

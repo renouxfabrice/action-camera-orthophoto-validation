@@ -1,0 +1,15 @@
+﻿horodatage_pc;phase;etat_us;frequence_demandee_hz;reponse_carte
+2026-09-22 23:22:10.707;noir_depart;0;0;diode eteinte
+2026-09-22 23:22:23.000;cadence_1800us;1800;277,7778;demande 277.778 Hz -> reelle 277.7778 Hz  (OCR1A = 3599)
+2026-09-22 23:22:47.283;coupure;0;0;diode eteinte
+2026-09-22 23:22:51.573;cadence_1500us;1500;333,3333;demande 333.333 Hz -> reelle 333.3334 Hz  (OCR1A = 2999)
+2026-09-22 23:23:15.861;coupure;0;0;diode eteinte
+2026-09-22 23:23:20.160;cadence_1100us;1100;454,5455;demande 454.545 Hz -> reelle 454.5455 Hz  (OCR1A = 2199)
+2026-09-22 23:23:44.452;coupure;0;0;diode eteinte
+2026-09-22 23:23:48.734;cadence_900us;900;555,5556;demande 555.556 Hz -> reelle 555.5556 Hz  (OCR1A = 1799)
+2026-09-22 23:24:13.026;coupure;0;0;diode eteinte
+2026-09-22 23:24:17.315;cadence_700us;700;714,2857;demande 714.286 Hz -> reelle 714.2857 Hz  (OCR1A = 1399)
+2026-09-22 23:24:41.591;coupure;0;0;diode eteinte
+2026-09-22 23:24:45.884;cadence_500us;500;1000;demande 1000.000 Hz -> reelle 1000.0000 Hz  (OCR1A = 999)
+2026-09-22 23:25:10.179;coupure;0;0;diode eteinte
+2026-09-22 23:25:12.191;fin;0;0;sequence terminee

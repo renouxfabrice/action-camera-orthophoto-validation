@@ -1,0 +1,6 @@
+Défaut;Nature;Conséquence pour l’orthophoto;Réponse possible
+Distorsion grand-angle;Géométrique;Projection non sténopé et courbure apparente;Calibration et modèle fisheye
+Rolling shutter;Géométrique et dynamique;Lignes de l’image acquises à des instants différents;Mesure du temps de lecture et correction
+Instabilité de l’orientation interne;Géométrique;Paramètres de calibration potentiellement variables;Contrôle et recalibration
+Flou de bougé;Perte d’information;Appariement des images dégradé;Réduire le mouvement pendant l’exposition
+Compression JPEG;Perte radiométrique;Détails fins et textures altérés;Limiter, sans pouvoir annuler la perte

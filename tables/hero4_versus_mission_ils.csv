@@ -1,0 +1,10 @@
+Élément;GoPro HERO4 Silver;GoPro MISSION 1 PRO ILS
+Rôle dans le projet;Caméra de démonstration et de mesure, disponible;Configuration cible du pack, à évaluer
+Capteur;Capteur intégré de caméra d’action, 12 Mpx;Type 1,0 pouce, 50 Mpx
+Optique;Grand-angle fixe, solidaire du boîtier;Monture Micro Quatre Tiers interchangeable, sans contacts électroniques
+Contrainte d’objectif;aucune : l’optique est imposée;"mise au point manuelle ; ouverture fixe ≤ f/4,5 ou diaphragme manuel"
+Distorsion;"Fisheye marqué ; modèle de projection adapté requis";"Dépend de l’objectif retenu ; calibration requise dans tous les cas"
+Mise au point;Gérée par le boîtier;Manuelle, à régler avant le vol
+Temps de lecture;26,9 ms ± 0,2 ms, mesuré au banc en photo 4000 × 3000;Non publié par le constructeur — à mesurer
+Validation photogrammétrique;Vol drone instrumenté;À conduire après obtention du boîtier
+Statut;Preuve de faisabilité de la méthode;Évolution du pack, non validée à ce jour

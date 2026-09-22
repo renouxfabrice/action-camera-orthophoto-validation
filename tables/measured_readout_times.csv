@@ -1,0 +1,9 @@
+Caméra;Mode de capture;Champ;Définition;Temps de lecture;Incertitude;Statut
+GoPro HERO4 Silver;Photo simple;large;12 Mpx;27,01 ms;;Mesuré au banc
+GoPro HERO4 Silver;Photo simple;large;7 Mpx;26,86 ms;;Mesuré au banc
+GoPro HERO4 Silver;Photo simple;4 000 × 3 000;12 Mpx;26,82 ms;± 0,02 ms;Valeur de référence
+GoPro HERO4 Silver;Photo Time Lapse 1 s;large;12 Mpx;26,9 ms;;Mode employé lors du vol instrumenté
+GoPro HERO4 Silver;Photo simple;moyen;7 Mpx;18,29 ms;;Mesuré au banc ; aucun vol instrumenté dans ce mode
+GoPro HERO13 Black;Photo Wide;—;27 Mpx;20,73 ms;;Mesuré au banc ; aucun vol instrumenté
+GoPro HERO13 Black;Photo Linear;—;27 Mpx;20,96 ms;;Mesuré au banc à ISO minimum forcé ; aucun vol instrumenté
+GoPro HERO (2018);Rafale;—;3 648 × 2 736;13,44 ms;± 0,04 ms;Mesure provisoire

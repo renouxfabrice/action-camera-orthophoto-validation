@@ -1,0 +1,1110 @@
+<title>Banc Rolling Shutter</title>
+<meta name="theme-color" content="#0d0b0a">
+<style>
+  /* ────────────────────────────────────────────────────────────────
+     Cette page se lit DANS LE NOIR, pendant la mesure. Une page claire
+     detruirait l'adaptation nocturne de l'operateur et, pire, eclairerait
+     la scene qu'il est en train de photographier — la lumiere ambiante
+     remplit les bandes sombres et efface le signal.
+
+     D'ou le fond tres sombre et l'accent ambre : c'est la couleur qui
+     preserve le mieux la vision nocturne, celle des eclairages de poste de
+     pilotage et des salles de developpement photographique. Ce n'est pas
+     un parti pris esthetique, c'est une contrainte du sujet.
+
+     Aucune police distante, aucune bibliotheque : la page doit fonctionner
+     sur le terrain, sans reseau.
+     ──────────────────────────────────────────────────────────────── */
+  :root{
+    --fond:#0d0b0a; --fond2:#17130f; --bord:#2f2620;
+    --texte:#e8ded4; --faible:#9c8d7e;
+    --ambre:#ff9f45; --ambre-sourd:#7a4d1c;
+    --bon:#7fb069; --moyen:#e0b040; --mauvais:#d6604d;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --texte-police:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:0;background:var(--fond);color:var(--texte);
+    font-family:var(--texte-police);font-size:16px;line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  .page{max-width:680px;margin:0 auto;padding:16px 14px 60px}
+  header{border-bottom:1px solid var(--bord);padding-bottom:14px;margin-bottom:18px}
+  h1{font-size:1.32rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+  .sous{color:var(--faible);font-size:.85rem;margin:0}
+  h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;
+     color:var(--ambre);margin:26px 0 10px;font-weight:600}
+  .carte{background:var(--fond2);border:1px solid var(--bord);
+         border-radius:9px;padding:14px}
+  .carte + .carte{margin-top:10px}
+
+  label.fichier{
+    display:block;border:2px dashed var(--ambre-sourd);border-radius:9px;
+    padding:22px 14px;text-align:center;cursor:pointer;
+    background:#120f0c;transition:border-color .15s;
+  }
+  label.fichier:active{border-color:var(--ambre)}
+  label.fichier input{display:none}
+  .fichier b{color:var(--ambre);display:block;font-size:1.05rem}
+  .fichier span{color:var(--faible);font-size:.82rem}
+
+  .cadence{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .cadence button{
+    padding:13px 8px;border-radius:8px;border:1px solid var(--bord);
+    background:#120f0c;color:var(--faible);font-size:.95rem;cursor:pointer;
+    font-family:var(--texte-police);
+  }
+  .cadence button[aria-pressed="true"]{
+    border-color:var(--ambre);color:var(--ambre);background:#1d1611;font-weight:600;
+  }
+  .cadence small{display:block;font-size:.72rem;opacity:.75;font-weight:400}
+
+  .resultat{text-align:center;padding:18px 12px}
+  .grand{font-size:3.1rem;font-weight:650;font-family:var(--mono);
+         letter-spacing:-.02em;line-height:1}
+  .grand small{font-size:1.1rem;color:var(--faible);font-weight:400}
+  .etiquette{color:var(--faible);font-size:.8rem;text-transform:uppercase;
+             letter-spacing:.09em;margin-bottom:6px}
+  .detail{margin-top:12px;font-family:var(--mono);font-size:.78rem;
+          color:var(--faible);line-height:1.7}
+  .verdict{margin-top:12px;padding:9px 11px;border-radius:7px;font-size:.84rem;
+           text-align:left}
+  .v-bon{background:#16200f;border:1px solid #33481f;color:#b9d8a0}
+  .v-moyen{background:#241c0c;border:1px solid #4d3c14;color:#e5c979}
+  .v-mauvais{background:#241010;border:1px solid #522020;color:#eaa79a}
+
+  table{width:100%;border-collapse:collapse;font-size:.83rem;
+        font-family:var(--mono)}
+  th,td{text-align:left;padding:7px 5px;border-bottom:1px solid var(--bord)}
+  th{color:var(--faible);font-weight:500;font-size:.72rem;
+     text-transform:uppercase;letter-spacing:.06em}
+  td.n{text-align:right}
+  tr.retenue td{color:var(--ambre)}
+
+  ol{padding-left:19px;margin:0}
+  ol li{margin-bottom:11px;font-size:.89rem}
+  ol li b{color:var(--texte)}
+  .note{color:var(--faible);font-size:.8rem;margin-top:9px}
+  code{font-family:var(--mono);background:#1d1711;padding:1px 5px;
+       border-radius:4px;color:var(--ambre);font-size:.86em}
+  canvas{display:block;width:100%;border-radius:7px;margin-top:12px;
+         border:1px solid var(--bord);background:#000}
+  .vide{color:var(--faible);text-align:center;padding:26px 10px;font-size:.88rem}
+  .btn-journal{flex:1;padding:11px;border-radius:8px;border:1px solid var(--ambre-sourd);
+    background:#1d1611;color:var(--ambre);font-size:.88rem;cursor:pointer;
+    font-family:var(--texte-police)}
+  .btn-journal:active{border-color:var(--ambre)}
+  button.effacer{width:100%;margin-top:10px;padding:11px;border-radius:8px;
+    border:1px solid var(--bord);background:#120f0c;color:var(--faible);
+    font-size:.86rem;cursor:pointer;font-family:var(--texte-police)}
+</style>
+
+<div class="page">
+<header>
+  <h1>Banc Rolling Shutter</h1>
+  <p class="sous">Temps de lecture d'un capteur, mesuré sur la photo d'une LED clignotante.</p>
+</header>
+
+<h2>1 — Cadence de la LED</h2>
+<div class="carte">
+  <p class="note" style="margin:0 0 6px">La carte balaie quatre cadences, 15&nbsp;s chacune. Vous n'avez <b>rien à compter</b>&nbsp;: elles ne sont pas en rapports simples, donc l'appli retrouve seule laquelle a produit chaque photo.</p>
+  <div class="cadence" id="cadence">
+    <button data-ms="auto" aria-pressed="true" style="grid-column:1/-1">Automatique<small>recommandé — chargez plusieurs photos</small></button>
+    <button data-ms="2" aria-pressed="false">2,000 ms<small>1 éclat</small></button>
+    <button data-ms="1" aria-pressed="false">1,000 ms<small>2 éclats</small></button>
+    <button data-ms="0.6" aria-pressed="false">0,600 ms<small>3 éclats</small></button>
+    <button data-ms="0.25" aria-pressed="false">0,250 ms<small>4 éclats</small></button>
+  </div>
+  <p class="note" style="margin:8px 0 0">Chaque cadence exige une obturation plus rapide qu'elle&nbsp;: 1/500, 1/1000, 1/1666, 1/4000. Au-delà, les états se mélangent et les bandes disparaissent — c'est pourquoi il y en a quatre.</p>
+</div>
+
+<h2>2 — La photo</h2>
+<label class="fichier">
+  <input type="file" accept="image/*" id="fichier" multiple>
+  <b>Choisir les photos</b>
+  <span>toute la série d'un coup — pleine résolution, sans recadrage</span>
+</label>
+<div id="progression" class="note" style="text-align:center"></div>
+
+<div id="sortie"></div>
+
+<h2>Mesures de cette session</h2>
+<div class="carte" id="boiteTable">
+  <div class="vide" id="tableVide">Aucune mesure pour l'instant.</div>
+  <table id="table" hidden>
+    <thead><tr><th>Cadence</th><th class="n">Bandes</th><th class="n">Pose</th><th class="n">Netteté</th><th class="n">Lecture</th></tr></thead>
+    <tbody id="corps"></tbody>
+  </table>
+  <div id="coherence"></div>
+  <button class="effacer" id="effacer" hidden>Effacer les mesures</button>
+</div>
+
+<h2>Journal des séances</h2>
+<div class="carte" id="carteJournal">
+  <p class="note" style="margin:0 0 8px">Chaque analyse concluante s'inscrit ici
+  et <b>survit à la fermeture de la page</b>. C'est la trace qui permet de
+  comparer deux séances, de voir qu'un boîtier a dérivé, ou de retrouver d'où
+  sort un chiffre.</p>
+  <div class="vide" id="journalVide">Aucune séance enregistrée.</div>
+  <table id="tableJournal" hidden>
+    <thead><tr><th>Date</th><th>Appareil</th><th class="n">Lecture</th><th class="n">Écart</th><th class="n">Photos</th></tr></thead>
+    <tbody id="corpsJournal"></tbody>
+  </table>
+  <div style="display:flex; gap:8px; margin-top:10px">
+    <button class="btn-journal" id="exporterJournal">Exporter en CSV</button>
+    <button class="btn-journal" id="copierJournal">Copier</button>
+  </div>
+  <button class="effacer" id="viderJournal" hidden>Vider le journal</button>
+  <p class="note" id="noteJournal" style="margin-top:8px"></p>
+</div>
+
+<h2>Protocole</h2>
+<div class="carte">
+  <ol>
+    <li><b>Diffuseur sur la LED.</b> Papier calque, bouchon translucide. La LED doit occuper une grande partie du cadre — vue comme un point, elle ne couvrirait même pas une bande.</li>
+    <li><b>Obscurité.</b> La lumière ambiante remplit les bandes sombres et efface le signal.</li>
+    <li><b>Obturation la plus rapide possible.</b> Aucune GoPro ne laisse la fixer en mode photo : voyez la fiche de réglages pour pousser l'automatisme à la choisir. Sur un téléphone, mode Pro, 1/2000&nbsp;s.</li>
+    <li><b>Pleine résolution, sans recadrage.</b> Le calcul rapporte la période à la hauteur totale de l'image.</li>
+    <li><b>Un intervallomètre plutôt que des déclenchements à la main.</b> Lancez la caméra en time lapse à 2&nbsp;s et laissez tourner deux à trois minutes, le temps de deux cycles complets. Vous obtenez une quarantaine de photos réparties sur les quatre cadences, sans rien synchroniser.</li>
+    <li><b>Chargez tout d'un coup, en mode automatique.</b> L'appli mesure chaque photo, les regroupe par nombre de bandes, attribue les cadences et vérifie que toutes donnent le même temps de lecture. Une mesure seule ne prouverait rien&nbsp;: c'est ce recoupement qui valide.</li>
+  </ol>
+  <p class="note">La valeur retenue se donne à ODM par <code>--rolling-shutter-readout</code>, et se reporte dans le champ <code>camera.readout_ms</code> du vol.json.</p>
+</div>
+</div>
+
+<script>
+"use strict";
+
+/* ───────────────────────────────────────────────────────────────────
+   La mesure. Meme methode que l'outil de bureau : on cherche la PERIODE
+   des bandes par autocorrelation, plutot que de les compter une a une.
+
+   Compter a une ou deux bandes pres fait quatre a huit pour cent d'erreur
+   sur vingt-cinq ; les bandes des bords sont tronquees et chacun les
+   compte differemment ; et un comptage manuel ne dit rien de la qualite du
+   signal, alors que l'autocorrelation rend un indice de nettete.
+   ─────────────────────────────────────────────────────────────────── */
+
+var etatMs = "auto";
+var mesures = [];
+
+/* ───────────────────────────────────────────────────────────────────
+   LE JOURNAL DES SEANCES.
+
+   Il vit dans le stockage local du navigateur : il survit donc a la
+   fermeture de la page, mais il reste PROPRE A CE NAVIGATEUR et a cet
+   appareil — il ne voyage pas tout seul. D'ou le bouton d'export, qui est
+   la seule facon d'en sortir les mesures pour les ranger avec le projet.
+
+   Chaque lecture et chaque ecriture est protegee : un navigateur en
+   navigation privee, ou regle pour refuser le stockage, fait echouer ces
+   appels. Le journal est un confort, il ne doit jamais empecher une mesure
+   d'aboutir.
+   ─────────────────────────────────────────────────────────────────── */
+
+var CLE_JOURNAL = "banc_rolling_shutter_journal";
+
+function lireJournal(){
+  try {
+    var brut = localStorage.getItem(CLE_JOURNAL);
+    return brut ? JSON.parse(brut) : [];
+  } catch (e){ return []; }
+}
+
+function ecrireJournal(liste){
+  try { localStorage.setItem(CLE_JOURNAL, JSON.stringify(liste)); return true; }
+  catch (e){ return false; }
+}
+
+/* On n'inscrit qu'une fois par appareil et par séance : recapituler() est
+   rappele a chaque photo ajoutee, et sans cette precaution le journal
+   compterait une ligne par photo. La cle de seance est la date du jour, le
+   modele, et le nombre de photos — deux seances du meme boitier le meme jour
+   se distinguent donc par leur volume. */
+function inscrireAuJournal(appareil, lecture, dispersion, photos, cadences){
+  var liste = lireJournal();
+  var d = new Date();
+  var jour = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2)
+           + "-" + ("0" + d.getDate()).slice(-2);
+  var cle = jour + "|" + appareil + "|" + photos;
+  var deja = liste.filter(function(l){ return l.cle === cle; })[0];
+  var ligne = {
+    cle: cle, jour: jour,
+    heure: ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2),
+    appareil: appareil, lecture: lecture, dispersion: dispersion,
+    photos: photos, cadences: cadences
+  };
+  if (deja){ liste[liste.indexOf(deja)] = ligne; } else { liste.push(ligne); }
+  ecrireJournal(liste);
+  afficherJournal();
+}
+
+function afficherJournal(){
+  var liste = lireJournal();
+  var corps = document.getElementById("corpsJournal");
+  if (!corps) return;
+  document.getElementById("tableJournal").hidden = !liste.length;
+  document.getElementById("journalVide").hidden = !!liste.length;
+  document.getElementById("viderJournal").hidden = !liste.length;
+  corps.innerHTML = liste.slice().reverse().map(function(l){
+    return "<tr><td>" + l.jour + " " + l.heure + "</td>"
+      + "<td>" + l.appareil + "</td>"
+      + '<td class="n">' + fmt(l.lecture) + " ms</td>"
+      + '<td class="n">' + (l.dispersion === null ? "—" : fmt(l.dispersion) + " %") + "</td>"
+      + '<td class="n">' + l.photos + "</td></tr>";
+  }).join("");
+}
+
+function journalEnCsv(){
+  var liste = lireJournal();
+  /* Point-virgule et non virgule : sur une machine reglee en francais, le
+     tableur attend ce separateur, et la virgule y est le separateur decimal. */
+  var lignes = ["date;heure;appareil;lecture_ms;dispersion_pct;photos;cadences_ms"];
+  liste.forEach(function(l){
+    lignes.push([l.jour, l.heure, l.appareil, fmt(l.lecture),
+                 l.dispersion === null ? "" : fmt(l.dispersion),
+                 l.photos, l.cadences || ""].join(";"));
+  });
+  return lignes.join("\n");
+}
+
+/* Les cadences que la carte joue, en millisecondes par etat. Elles ne sont
+   volontairement PAS en rapports simples : c'est ce qui permet de retrouver
+   laquelle a produit une photo donnee. */
+var CADENCES = [2, 1, 0.6, 0.25];
+
+/* ───────────────────────────────────────────────────────────────────
+   LA MESURE. On cherche la PERIODE des bandes par autocorrelation, plutot
+   que de les compter une a une.
+
+   Compter a une ou deux bandes pres fait quatre a huit pour cent d'erreur
+   sur vingt-cinq ; les bandes des bords sont tronquees et chacun les compte
+   differemment ; et un comptage manuel ne dit rien de la qualite du signal,
+   alors que l'autocorrelation rend un indice de nettete.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* Le profil est centre puis debarrasse de sa tendance lente : un vignetage
+   ou un gradient d'eclairage produirait une correlation a longue portee qui
+   masquerait les bandes. */
+function detendre(p){
+  var n = p.length, f = Math.max(9, (n >> 3) | 1), demi = f >> 1, i, j;
+  var lisse = new Float64Array(n), out = new Float64Array(n);
+  for (i = 0; i < n; i++){
+    var a = i - demi, b = i + demi;
+    if (a < 0){ a = 0; b = Math.min(n - 1, f - 1); }
+    if (b > n - 1){ b = n - 1; a = Math.max(0, n - f); }
+    var t = 0;
+    for (j = a; j <= b; j++) t += p[j];
+    lisse[i] = t / (b - a + 1);
+  }
+  var moy = 0;
+  for (i = 0; i < n; i++){ out[i] = p[i] - lisse[i]; moy += out[i]; }
+  moy /= n;
+  var ec = 0;
+  for (i = 0; i < n; i++){ out[i] -= moy; ec += out[i] * out[i]; }
+  ec = Math.sqrt(ec / n);
+  if (ec > 1e-9) for (i = 0; i < n; i++) out[i] /= ec;
+  return out;
+}
+
+/* ON NE PREND PAS LE MAXIMUM GLOBAL de l'autocorrelation. Celle d'un signal
+   carre vaut un au decalage nul puis DECROIT LINEAIREMENT : le maximum
+   tomberait toujours sur le plus petit decalage examine, jamais sur la
+   periode. On sort d'abord du lobe central — premier passage sous zero —
+   puis on cherche le pic. C'est la methode des detecteurs de hauteur
+   tonale, et elle vaut ici pour la meme raison. */
+function periode(p){
+  var n = p.length;
+  if (n < 64) return null;
+  var maxi = n >> 1, i, k;
+  var c = new Float64Array(maxi);
+  for (k = 0; k < maxi; k++){
+    var s = 0;
+    for (i = 0; i + k < n; i++) s += p[i] * p[i + k];
+    c[k] = s;
+  }
+  if (c[0] <= 0) return null;
+  for (k = 0; k < maxi; k++) c[k] /= c[0];
+
+  var depart = -1;
+  for (k = 1; k < maxi; k++){ if (c[k] < 0){ depart = k; break; } }
+  if (depart < 0) return null;
+
+  var best = depart, bv = c[depart];
+  for (k = depart; k < maxi; k++){ if (c[k] > bv){ bv = c[k]; best = k; } }
+  if (bv <= 0) return null;
+
+  /* ERREUR D'OCTAVE. Un signal de periode P se ressemble aussi a lui-meme a
+     2P et a 3P, et le pic peut y etre le plus haut : il suffit que les bandes
+     soient serrees et qu'une sur deux soit un peu plus pale — leur largeur
+     alterne de sept a huit pixels quand la periode ne tombe pas sur un compte
+     entier. C'est alors le DOUBLE de la periode qui l'emporte, on compte
+     moitie moins de bandes, et le temps de lecture se trouve divise par deux
+     a la cadence la plus rapide : celle qui donne les bandes les plus fines,
+     donc precisement la plus exposee.
+
+     On redescend tant qu'un sous-multiple porte un pic presque aussi haut.
+     Le test ne peut pas se declencher a tort : a la DEMI-periode d'un vrai
+     creneau l'autocorrelation est au contraire minimale, le signal y etant
+     en opposition de phase avec lui-meme. */
+  var SEUIL_OCTAVE = 0.85, tour, div, cand, marge, a0, b0, loc, kk;
+  for (tour = 0; tour < 4; tour++){
+    var reduit = false;
+    for (div = 2; div <= 3; div++){
+      cand = best / div;
+      if (cand < Math.max(depart, 2)) continue;
+      marge = Math.max(2, Math.round(0.06 * cand));
+      a0 = Math.max(depart, Math.round(cand) - marge);
+      b0 = Math.min(maxi - 1, Math.round(cand) + marge);
+      if (b0 <= a0) continue;
+      loc = a0;
+      for (kk = a0; kk <= b0; kk++){ if (c[kk] > c[loc]) loc = kk; }
+      if (c[loc] >= SEUIL_OCTAVE * bv){
+        best = loc; bv = c[loc]; reduit = true; break;
+      }
+    }
+    if (!reduit) break;
+  }
+
+  var pos = best;
+  if (best > 0 && best < maxi - 1){
+    var a = c[best - 1], b = c[best], d = c[best + 1];
+    var den = a - 2 * b + d;
+    if (Math.abs(den) > 1e-9){
+      var corr = 0.5 * (a - d) / den;
+      /* La correction ne peut pas depasser un demi-pixel : au-dela, le
+         sommet de la parabole sort de l'intervalle des trois points qui
+         l'ont ajustee. Sans cette borne, un pic plat rendait des periodes
+         negatives. */
+      if (corr >= -0.5 && corr <= 0.5) pos = best + corr;
+    }
+  }
+  return pos > 0 ? {periode: pos, nettete: bv} : null;
+}
+
+/* On n'impose pas la luminance perceptuelle : une LED monochrome n'emet que
+   dans un canal, et une LED bleue se retrouverait diluee par neuf dans une
+   ponderation faite pour l'oeil. On essaie chaque canal et l'on garde le
+   pic le plus franc. */
+function analyser(img){
+  var H = 1100;
+  var ech = Math.min(1, H / img.naturalHeight);
+  var w = Math.max(8, Math.round(img.naturalWidth * ech));
+  var h = Math.max(8, Math.round(img.naturalHeight * ech));
+  var cv = document.createElement("canvas");
+  cv.width = w; cv.height = h;
+  var ctx = cv.getContext("2d", {willReadFrequently:true});
+  ctx.drawImage(img, 0, 0, w, h);
+  var d = ctx.getImageData(0, 0, w, h).data;
+
+  var canaux = [
+    {nom:"rouge", f:function(i){ return d[i]; }},
+    {nom:"vert",  f:function(i){ return d[i+1]; }},
+    {nom:"bleu",  f:function(i){ return d[i+2]; }},
+    {nom:"luminance", f:function(i){
+        return 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2]; }}
+  ];
+
+  var meilleur = null, essais = [];
+  for (var c = 0; c < canaux.length; c++){
+    for (var axe = 0; axe < 2; axe++){
+      var lignes = axe === 0 ? h : w, cols = axe === 0 ? w : h;
+      /* On ne garde que les colonnes les plus contrastees : moyenner tout
+         le champ noierait les bandes dans le fond noir. */
+      var varc = new Float64Array(cols), xx, y, i, v;
+      for (xx = 0; xx < cols; xx++){
+        var s = 0, s2 = 0;
+        for (y = 0; y < lignes; y++){
+          i = axe === 0 ? (y*w + xx)*4 : (xx*w + y)*4;
+          v = canaux[c].f(i); s += v; s2 += v*v;
+        }
+        var m = s/lignes; varc[xx] = Math.max(0, s2/lignes - m*m);
+      }
+      var tri = Array.prototype.slice.call(varc).sort(function(a,b){return a-b;});
+      var seuil = tri[Math.floor(tri.length*0.65)] || 0;
+      var prof = new Float64Array(lignes), cnt = 0;
+      for (xx = 0; xx < cols; xx++){
+        if (varc[xx] < seuil) continue;
+        cnt++;
+        for (y = 0; y < lignes; y++){
+          i = axe === 0 ? (y*w + xx)*4 : (xx*w + y)*4;
+          prof[y] += canaux[c].f(i);
+        }
+      }
+      if (cnt < 4) continue;
+      for (y = 0; y < lignes; y++) prof[y] /= cnt;
+
+      var r = periode(detendre(prof));
+      if (!r) continue;
+      var cycles = lignes / r.periode;
+      var cand = {
+        canal: canaux[c].nom,
+        axe: axe === 0 ? "horizontales" : "verticales",
+        periode: r.periode, nettete: r.nettete,
+        cycles: cycles, bandes: cycles*2
+      };
+      essais.push(cand);
+      if (!meilleur || cand.nettete > meilleur.nettete) meilleur = cand;
+    }
+  }
+  if (!meilleur) return null;
+  meilleur.essais = essais.sort(function(a,b){return b.nettete-a.nettete;});
+  meilleur.taille = img.naturalWidth + " × " + img.naturalHeight;
+  return meilleur;
+}
+
+
+
+/* ───────────────────────────────────────────────────────────────────
+   LECTURE DES METADONNEES EXIF.
+
+   On y cherche trois choses : la marque et le modele — pour regrouper les
+   photos par appareil sans rien demander a l'operateur — et le temps de
+   pose reellement employe, qui explique les echecs.
+
+   Le format est ancien et peu commode : un segment APP1 dans le JPEG,
+   contenant un en-tete TIFF dont l'ordre des octets varie, puis des
+   repertoires d'etiquettes chainés. On n'en lit que le strict necessaire.
+   ─────────────────────────────────────────────────────────────────── */
+
+function lireExif(tampon){
+  var vue = new DataView(tampon);
+  if (vue.getUint16(0) !== 0xFFD8) return {};      // pas un JPEG
+
+  // On parcourt les segments jusqu'a trouver APP1 marque "Exif".
+  var p = 2, debutTiff = -1;
+  while (p < vue.byteLength - 4){
+    if (vue.getUint8(p) !== 0xFF) break;
+    var marqueur = vue.getUint8(p + 1);
+    var taille = vue.getUint16(p + 2);
+    if (marqueur === 0xE1 && vue.getUint32(p + 4) === 0x45786966){
+      debutTiff = p + 10;                          // apres "Exif\0\0"
+      break;
+    }
+    if (marqueur === 0xDA) break;                  // debut des donnees image
+    p += 2 + taille;
+  }
+  if (debutTiff < 0) return {};
+
+  // L'ordre des octets est declare par la photo elle-meme : "II" pour
+  // petit-boutiste, "MM" pour gros-boutiste. Le supposer serait une erreur
+  // classique — les deux existent selon les fabricants.
+  var petit = vue.getUint16(debutTiff) === 0x4949;
+  if (vue.getUint16(debutTiff + 2, petit) !== 42) return {};
+  var offsetIFD0 = vue.getUint32(debutTiff + 4, petit);
+
+  function chaine(offset, longueur){
+    var s = "";
+    for (var i = 0; i < longueur; i++){
+      var c = vue.getUint8(offset + i);
+      if (!c) break;
+      s += String.fromCharCode(c);
+    }
+    return s.trim();
+  }
+
+  function lireRepertoire(offset, resultat){
+    if (offset <= 0 || debutTiff + offset + 2 > vue.byteLength) return;
+    var n = vue.getUint16(debutTiff + offset, petit);
+    if (n > 512) return;                           // garde-fou
+    for (var i = 0; i < n; i++){
+      var e = debutTiff + offset + 2 + i * 12;
+      if (e + 12 > vue.byteLength) return;
+      var etiquette = vue.getUint16(e, petit);
+      var type = vue.getUint16(e + 2, petit);
+      var nombre = vue.getUint32(e + 4, petit);
+      var valeur = debutTiff + vue.getUint32(e + 8, petit);
+      // Une valeur de quatre octets ou moins tient dans le champ lui-meme.
+      var court = (type === 2 && nombre <= 4) || (type === 3 && nombre <= 2);
+      if (court) valeur = e + 8;
+
+      if (etiquette === 0x010F) resultat.marque = chaine(valeur, nombre);
+      else if (etiquette === 0x0110) resultat.modele = chaine(valeur, nombre);
+      else if (etiquette === 0x9003 || etiquette === 0x0132)
+        resultat.date = resultat.date || chaine(valeur, nombre);
+      else if (etiquette === 0x8769) resultat.exif = vue.getUint32(e + 8, petit);
+      else if (etiquette === 0x829A && type === 5 && valeur + 8 <= vue.byteLength){
+        var haut = vue.getUint32(valeur, petit);
+        var bas = vue.getUint32(valeur + 4, petit);
+        if (bas) resultat.pose = haut / bas;
+      }
+      else if (etiquette === 0x8827) resultat.iso = vue.getUint16(valeur, petit);
+    }
+  }
+
+  var r = {};
+  lireRepertoire(offsetIFD0, r);
+  if (r.exif) lireRepertoire(r.exif, r);           // sous-repertoire Exif
+  delete r.exif;
+  return r;
+}
+
+function nomAppareil(exif){
+  if (!exif) return "appareil inconnu";
+  var m = [exif.marque, exif.modele].filter(Boolean).join(" ").trim();
+  return m || "appareil inconnu";
+}
+
+function poseEnTexte(p){
+  if (!p) return null;
+  return p >= 1 ? p.toFixed(1) + " s" : "1/" + Math.round(1 / p) + " s";
+}
+
+/* ─── rendu ─── */
+function fmt(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ","); }
+
+function afficher(m, nom, exif){
+  var s = document.getElementById("sortie");
+  if (!m){
+    s.innerHTML = '<div class="carte"><div class="verdict v-mauvais">'
+      + "<b>Aucune périodicité détectable</b>" + (nom ? " sur " + nom : "")
+      + ".<br>Sur aucun canal, dans aucune orientation. Les trois causes, par "
+      + "ordre de fréquence : l'obturation était trop lente et les bandes se "
+      + "sont mélangées ; la LED occupait trop peu du cadre ; ou la photo a "
+      + "été prise pendant les éclats d'annonce."
+      + "</div></div>";
+    return;
+  }
+  var cl = m.nettete >= 0.30 ? "v-bon" : (m.nettete >= 0.15 ? "v-moyen" : "v-mauvais");
+  var txt;
+  if (m.nettete >= 0.30){
+    txt = "<b>Signal franc.</b> Cette photo est exploitable.";
+  } else if (m.nettete >= 0.15){
+    txt = "<b>Signal moyen.</b> À recouper avec les autres.";
+  } else {
+    txt = "<b>Signal trop faible.</b> Cette photo est écartée du calcul.";
+  }
+  var autres = m.essais.filter(function(e){ return e.canal !== m.canal; }).slice(0,2);
+  s.innerHTML =
+    '<div class="carte resultat">'
+    + '<div class="etiquette">' + (nom ? nom : "dernière photo")
+    +   (exif ? ' · ' + nomAppareil(exif) : '')
+    +   ((exif && exif.pose) ? ' · ' + poseEnTexte(exif.pose) : '') + '</div>'
+    + '<div class="grand">' + fmt(m.bandes, 0) + ' <small>bandes</small></div>'
+    + '<div class="detail">'
+    +   m.taille + ' px · canal ' + m.canal + ' · bandes ' + m.axe + '<br>'
+    +   'période ' + fmt(m.periode, 1) + ' px · netteté ' + fmt(m.nettete, 2)
+    +   (autres.length ? '<br>autres canaux : ' + autres.map(function(e){
+          return e.canal + ' ' + fmt(e.bandes, 0) + ' bandes'; }).join(', ') : '')
+    + '</div>'
+    + '<div class="verdict ' + cl + '">' + txt + '</div>'
+    + '</div>';
+}
+
+function ajouter(m, nom, exif){
+  mesures.push({
+    nom: nom, cycles: m.cycles, bandes: m.bandes, nettete: m.nettete,
+    appareil: nomAppareil(exif), pose: exif ? exif.pose : null,
+    etat: (etatMs === "auto" ? null : etatMs)
+  });
+}
+
+/* ───────────────────────────────────────────────────────────────────
+   L'ATTRIBUTION AUTOMATIQUE DES CADENCES.
+
+   Le nombre de bandes vaut lecture / cadence : une photo seule laisse deux
+   inconnues pour une equation. Mais LE TEMPS DE LECTURE EST LE MEME POUR
+   TOUTES LES PHOTOS — c'est une propriete du capteur, pas de la LED.
+
+   On regroupe donc les photos par nombre de bandes : celles d'une meme
+   cadence forment un groupe. Puis on essaie toutes les facons d'attribuer
+   les quatre cadences aux groupes, et l'on retient celle qui rend les temps
+   de lecture les plus concordants. Comme les cadences ne sont pas en
+   rapports simples, une seule attribution concorde vraiment.
+
+   C'est le meme raisonnement que le controle de coherence, mais retourne :
+   au lieu de verifier que deux mesures s'accordent, on se sert de l'accord
+   pour retrouver ce qu'on ignorait.
+   ─────────────────────────────────────────────────────────────────── */
+
+function grouperAvec(liste, tolerance){
+  var tri = liste.slice().sort(function(a,b){ return a.cycles - b.cycles; });
+  var groupes = [], courant = null;
+  for (var i = 0; i < tri.length; i++){
+    if (courant && Math.abs(tri[i].cycles - courant.moyenne)
+                   / courant.moyenne < tolerance){
+      courant.membres.push(tri[i]);
+      courant.moyenne = courant.membres.reduce(function(s,m){
+        return s + m.cycles; }, 0) / courant.membres.length;
+    } else {
+      courant = {membres: [tri[i]], moyenne: tri[i].cycles};
+      groupes.push(courant);
+    }
+  }
+  return groupes;
+}
+
+function grouper(liste){
+  /* Deux photos prises a la meme cadence donnent le meme nombre de bandes a
+     un pour cent pres — en principe. En pratique, une photo un peu floue ou
+     un peu sous-exposee s'en ecarte davantage, et un regroupement a
+     tolerance fixe eclate alors une cadence en deux groupes. On depasserait
+     quatre groupes, c'est-a-dire plus qu'il n'existe de cadences, et il
+     faudrait renoncer.
+
+     On relache donc la tolerance par paliers jusqu'a retrouver un nombre
+     plausible. La separation entre deux cadences voisines etant de dix-huit
+     pour cent, monter jusqu'a douze ne risque pas de les fondre. */
+  var tolerances = [0.05, 0.07, 0.09, 0.12, 0.15];
+  var groupes = grouperAvec(liste, tolerances[0]);
+  for (var i = 1; i < tolerances.length && groupes.length > CADENCES.length;
+       i++){
+    groupes = grouperAvec(liste, tolerances[i]);
+  }
+
+  /* S'il en reste trop, on FUSIONNE les deux plus proches plutot que de
+     renoncer. Renoncer serait le plus mauvais des comportements : on
+     afficherait « impossible » sans que l'utilisateur sache si c'est sa
+     manipulation ou l'outil qui est en cause. Deux groupes voisins en
+     nombre de bandes viennent probablement de la meme cadence, puisque deux
+     cadences distinctes sont separees d'au moins dix-huit pour cent. La
+     dispersion finale dira si le resultat vaut quelque chose. */
+  while (groupes.length > CADENCES.length){
+    var meilleur = 1, ecartMin = Infinity;
+    for (var k = 1; k < groupes.length; k++){
+      var e = (groupes[k].moyenne - groupes[k-1].moyenne)
+              / groupes[k-1].moyenne;
+      if (e < ecartMin){ ecartMin = e; meilleur = k; }
+    }
+    var fondu = groupes[meilleur - 1].membres.concat(groupes[meilleur].membres);
+    groupes.splice(meilleur - 1, 2, {
+      membres: fondu,
+      moyenne: fondu.reduce(function(s,m){ return s + m.cycles; }, 0)
+               / fondu.length
+    });
+  }
+  return groupes;
+}
+
+function permutations(tableau, k){
+  if (k === 0) return [[]];
+  var sortie = [];
+  for (var i = 0; i < tableau.length; i++){
+    var reste = tableau.slice(0, i).concat(tableau.slice(i + 1));
+    permutations(reste, k - 1).forEach(function(p){
+      sortie.push([tableau[i]].concat(p));
+    });
+  }
+  return sortie;
+}
+
+/* LA POSE DECIDE DE CE QUI EST MESURABLE, ET ELLE PASSE AVANT TOUT LE RESTE.
+   Une ligne du capteur integre la lumiere pendant toute la duree de pose. Si
+   cette duree couvre plusieurs allumages de la LED, la ligne enregistre leur
+   moyenne et non leur alternance : les bandes ne sont pas dans le fichier,
+   quoi qu'on fasse ensuite. Une photo posee plus longtemps que la plus lente
+   des cadences ne peut donc porter AUCUNE bande — et ce qu'on y trouverait de
+   periodique serait autre chose : un gradient d'eclairage, une texture de
+   paroi, du bruit de capteur.
+
+   Ce filtre existe parce qu'il a manque. Une seance ou la pose atteignait un
+   quart de seconde — cent fois trop longue — a rendu « les cadences
+   concordent a 1,2 % pres ». Le chiffre etait pure fiction, et rien dans le
+   tableau ne permettait de s'en douter. */
+var POSE_MAXI_MS = 2;   /* la plus lente des cadences */
+
+/* ON PART DE LA PHYSIQUE, PAS DES DONNEES.
+
+   L'ancienne methode rassemblait les photos par nombre de bandes, puis
+   attribuait les cadences aux groupes obtenus — elle supposait donc que le
+   regroupement etait juste. Sur une seance reelle il ne l'etait pas : une
+   poignee de photos aberrantes formait un pont entre deux paquets pourtant
+   distincts (45 et 27 bandes), qui ont fusionne, decalant toute l'attribution
+   d'un cran. Le verdict annoncait 103 % de desaccord sur des donnees qui
+   concordaient en verite a 1,5 % pres.
+
+   Desormais on balaie les temps de lecture possibles et l'on retient celui qui
+   rapproche le mieux CHAQUE photo de l'une des quatre valeurs attendues
+   (lecture / cadence). Aucun regroupement prealable, donc aucune occasion de
+   se tromper de groupe : une photo aberrante reste mal expliquee mais
+   n'entraine plus ses voisines. On prend l'ecart MEDIAN, qui ignore les
+   aberrantes par construction. */
+function ajusterLecture(bonnes){
+  var vals = bonnes.map(function(m){ return m.bandes; })
+                   .filter(function(b){ return b > 0.5; });
+  if (vals.length < 3) return null;
+
+  function cout(lecture){
+    var e = vals.map(function(b){
+      var mieux = Infinity;
+      for (var i = 0; i < CADENCES.length; i++){
+        var d = Math.abs(b - lecture / CADENCES[i]) / b;
+        if (d < mieux) mieux = d;
+      }
+      return mieux;
+    });
+    e.sort(function(x, y){ return x - y; });
+    return e[e.length >> 1];
+  }
+
+  var best = null, bv = Infinity, L;
+  for (L = 2; L <= 120; L += 0.01){
+    var c = cout(L);
+    if (c < bv){ bv = c; best = L; }
+  }
+  var bas = best - 0.01, haut = best + 0.01, tour, i;
+  for (tour = 0; tour < 3; tour++){
+    var pas = (haut - bas) / 40;
+    for (i = 0; i <= 40; i++){
+      var x = bas + pas * i, cx = cout(x);
+      if (cx < bv){ bv = cx; best = x; }
+    }
+    bas = best - pas; haut = best + pas;
+  }
+
+  var parCadence = {}, expliquees = 0;
+  bonnes.forEach(function(m){
+    if (!(m.bandes > 0.5)) return;
+    var mieux = Infinity, retenue = null;
+    for (var i = 0; i < CADENCES.length; i++){
+      var d = Math.abs(m.bandes - best / CADENCES[i]) / m.bandes;
+      if (d < mieux){ mieux = d; retenue = CADENCES[i]; }
+    }
+    if (mieux <= 0.12){
+      (parCadence[retenue] = parCadence[retenue] || []).push(m);
+      expliquees++;
+      m.cadence = retenue;
+      m.lecture = m.bandes * retenue;
+    }
+  });
+
+  var lectures = [], cadences = [];
+  Object.keys(parCadence).forEach(function(c){
+    var lot = parCadence[c];
+    var moy = lot.reduce(function(s, m){ return s + m.bandes; }, 0) / lot.length;
+    cadences.push(parseFloat(c));
+    lectures.push(moy * parseFloat(c));
+  });
+  if (!lectures.length) return null;
+  var moyenne = lectures.reduce(function(a, b){ return a + b; }, 0) / lectures.length;
+  var dispersion = lectures.length >= 2
+    ? (Math.max.apply(null, lectures) - Math.min.apply(null, lectures)) / moyenne
+    : null;
+
+  return {moyenne: best, ecartMedian: bv, parCadence: parCadence,
+          cadences: cadences, lectures: lectures, dispersion: dispersion,
+          expliquees: expliquees, total: vals.length,
+          groupes: cadences};
+}
+
+function attribuer(liste){
+  var bonnes = liste.filter(function(m){
+    if (m.pose && m.pose * 1000 >= POSE_MAXI_MS) return false;
+    return m.nettete >= 0.15;
+  });
+  if (!bonnes.length) return null;
+  return ajusterLecture(bonnes);
+}
+
+function ancienneAttribution(liste){
+  var bonnes = liste.filter(function(m){
+    if (m.pose && m.pose * 1000 >= POSE_MAXI_MS) return false;
+    return m.nettete >= 0.15;
+  });
+  if (!bonnes.length) return null;
+  var groupes = grouper(bonnes);
+  /* Les groupes sont tries par nombre de bandes croissant. Plus de bandes
+     signifie une cadence plus rapide, donc les cadences doivent leur etre
+     attribuees dans l'ordre decroissant — mais on n'impose pas cet ordre :
+     on essaie tout et l'on juge sur la concordance, ce qui reste valable
+     meme si une cadence manque a l'appel. */
+  if (groupes.length > CADENCES.length) return null;
+  var meilleures = null;
+  permutations(CADENCES, groupes.length).forEach(function(choix){
+    var lectures = groupes.map(function(g, i){ return 2 * g.moyenne * choix[i]; });
+    var moy = lectures.reduce(function(a,b){return a+b;},0) / lectures.length;
+    if (moy <= 0) return;
+    var dispersion = (Math.max.apply(null, lectures)
+                      - Math.min.apply(null, lectures)) / moy;
+    if (!meilleures || dispersion < meilleures.dispersion){
+      meilleures = {choix: choix, lectures: lectures, moyenne: moy,
+                    dispersion: dispersion, groupes: groupes};
+    }
+  });
+  return meilleures;
+}
+
+function recapituler(){
+  var corps = document.getElementById("corps");
+  var z = document.getElementById("coherence");
+  if (!mesures.length){
+    document.getElementById("table").hidden = true;
+    document.getElementById("tableVide").hidden = false;
+    document.getElementById("effacer").hidden = true;
+    z.innerHTML = "";
+    return;
+  }
+  document.getElementById("table").hidden = false;
+  document.getElementById("tableVide").hidden = true;
+  document.getElementById("effacer").hidden = false;
+
+  /* ON REGROUPE D'ABORD PAR APPAREIL. Deux cameras ont deux temps de
+     lecture differents : melanger leurs photos ferait chercher a
+     l'attribution une valeur unique qui n'existe pas. Elle en trouverait
+     une — fausse — et l'ecart passerait pour du bruit au lieu d'etre vu
+     comme l'erreur qu'il est. */
+  var parAppareil = {};
+  mesures.forEach(function(m){
+    (parAppareil[m.appareil] = parAppareil[m.appareil] || []).push(m);
+  });
+  var appareils = Object.keys(parAppareil).sort();
+
+  var lignes = [], blocs = [];
+  appareils.forEach(function(appareil){
+    var lot = parAppareil[appareil];
+    var attribution = (etatMs === "auto") ? attribuer(lot) : null;
+    /* L'ajustement a marque chaque photo expliquee de la cadence qui lui
+       convient ; celles qu'aucune cadence n'explique restent sans. */
+    var cadenceDe = {};
+    if (attribution){
+      Object.keys(attribution.parCadence).forEach(function(c){
+        attribution.parCadence[c].forEach(function(m){
+          cadenceDe[m.nom] = parseFloat(c);
+        });
+      });
+    }
+
+    if (appareils.length > 1){
+      lignes.push('<tr><td colspan="5" style="color:var(--ambre);'
+        + 'padding-top:12px;font-weight:600">' + appareil
+        + ' — ' + lot.length + ' photo(s)</td></tr>');
+    }
+    lot.forEach(function(m){
+      var e = (etatMs === "auto") ? cadenceDe[m.nom] : etatMs;
+      var faible = m.nettete < 0.15;
+      lignes.push('<tr' + (faible ? ' style="opacity:.45"' : '') + '>'
+        + '<td>' + (e ? fmt(e, 3) + ' ms' : '—') + '</td>'
+        + '<td class="n">' + fmt(m.bandes, 0) + '</td>'
+        + '<td class="n">' + (m.pose ? poseEnTexte(m.pose) : '—') + '</td>'
+        + '<td class="n">' + fmt(m.nettete, 2) + '</td>'
+        + '<td class="n">' + (e ? fmt(2 * m.cycles * e) + ' ms' : '—')
+        + '</td></tr>');
+    });
+    blocs.push({appareil: appareil, lot: lot, attribution: attribution});
+  });
+  corps.innerHTML = lignes.join("");
+
+  if (etatMs !== "auto"){
+    z.innerHTML = '<div class="verdict v-moyen" style="margin-top:14px">'
+      + "<b>Mode manuel.</b> Toutes les photos sont comptées à "
+      + fmt(etatMs, 3) + " ms. Passez en automatique pour que l'appli "
+      + "identifie les cadences et recoupe les mesures.</div>";
+    return;
+  }
+
+  z.innerHTML = blocs.map(function(b){
+    var titre = (blocs.length > 1)
+      ? '<div style="font-weight:600;margin-bottom:4px">' + b.appareil + '</div>'
+      : '';
+    var a = b.attribution;
+    if (!a){
+      /* On distingue les deux causes d'echec, parce qu'elles n'appellent pas
+         le meme geste : une pose trop longue se corrige en refaisant les
+         photos autrement, un signal trop faible en rapprochant la LED. */
+      var longues = b.lot.filter(function(m){
+        return m.pose && m.pose * 1000 >= POSE_MAXI_MS; });
+      if (longues.length){
+        var med = longues.map(function(m){ return m.pose; })
+                         .sort(function(x, y){ return x - y; })
+                         [longues.length >> 1];
+        return '<div class="verdict v-mauvais" style="margin-top:14px">' + titre
+          + "<b>Aucune mesure possible, et la cause est connue : la pose.</b> "
+          + longues.length + " photo(s) posées " + poseEnTexte(med)
+          + " en médiane, quand un état de la LED en dure au plus "
+          + POSE_MAXI_MS + " ms — soit " + Math.round(med * 1000 / POSE_MAXI_MS)
+          + " fois trop longtemps. Chaque ligne du capteur a intégré des "
+          + "centaines d'allumages et n'a gardé que leur moyenne. Les bandes "
+          + "ne sont pas dans les fichiers : aucun traitement ne les y "
+          + "trouvera.<br><br>Il faut refaire les photos avec une pose plus "
+          + "courte. Dans l'ordre d'efficacité : approcher la LED de "
+          + "l'objectif jusqu'à ce qu'elle forme une tache large et vive au "
+          + "centre du cadre ; activer Protune <b>en premier</b>, puis la "
+          + "mesure spot ; correction d'exposition à −2,0 ; limite ISO au "
+          + "maximum ; retirer le diffuseur.</div>";
+      }
+      return '<div class="verdict v-mauvais" style="margin-top:14px">' + titre
+        + "Aucune photo exploitable pour cet appareil : le signal est trop "
+        + "faible pour qu'une périodicité s'en dégage. La LED occupait-elle "
+        + "une bonne part du cadre ? Clignotait-elle ?</div>";
+    }
+    var n = a.cadences.length;
+    if (n < 2){
+      return '<div class="verdict v-moyen" style="margin-top:14px">' + titre
+        + "<b>Une seule cadence détectée.</b> Le temps de lecture ne peut pas "
+        + "être déterminé : le nombre de bandes vaut lecture ÷ cadence, et "
+        + "une seule cadence laisse deux inconnues pour une équation.<br>"
+        + "Laissez l'intervallomètre tourner un cycle complet — une minute "
+        + "et demie — pour couvrir les quatre cadences.</div>";
+    }
+    var pct = 100 * a.dispersion;
+    if (pct <= 6 && a.ecartMedian <= 0.08){
+      /* Seul un verdict CONCLUANT entre au journal. Une seance ou les
+         cadences ne concordent pas n'a pas produit de temps de lecture : y
+         inscrire son chiffre reviendrait a ranger une valeur fausse a cote
+         des bonnes, sans rien pour les distinguer plus tard. */
+      inscrireAuJournal(b.appareil, a.moyenne, pct, b.lot.length,
+                        a.cadences.slice().sort(function(u, v){ return v - u; })
+                         .map(function(c){ return fmt(c); }).join(" "));
+      return '<div class="verdict v-bon" style="margin-top:14px">' + titre
+        + "<b>" + n + " cadences identifiées, concordantes</b> à "
+        + fmt(pct) + "&nbsp;% près — " + a.expliquees + " photo(s) sur "
+        + a.total + " expliquées, écart médian "
+        + fmt(100 * a.ecartMedian) + "&nbsp;%.<br><br>"
+        + "Temps de lecture : <b style='font-size:1.25em'>"
+        + fmt(a.moyenne) + " ms</b><br><br>"
+        + "<code>--rolling-shutter-readout " + Math.round(a.moyenne)
+        + "</code></div>";
+    }
+    return '<div class="verdict v-mauvais" style="margin-top:14px">' + titre
+      + "<b>Les cadences ne concordent pas</b> (" + fmt(pct)
+      + "&nbsp;% d'écart).<br>Le temps de lecture est une propriété du "
+      + "capteur : il ne peut pas dépendre de la cadence de la LED. N'en "
+      + "retenez aucune valeur.<br><br>Causes usuelles : obturation trop "
+      + "lente devant les cadences rapides, photos prises pendant les éclats "
+      + "d'annonce, ou traitement multi-images de l'appareil (SuperPhoto, "
+      + "HDR) qui fusionne plusieurs poses.</div>";
+  }).join("");
+}
+
+/* ─── interactions ─── */
+document.getElementById("cadence").addEventListener("click", function(e){
+  var b = e.target.closest("button");
+  if (!b) return;
+  etatMs = (b.dataset.ms === "auto") ? "auto" : parseFloat(b.dataset.ms);
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function(x){
+    x.setAttribute("aria-pressed", x === b ? "true" : "false");
+  });
+  recapituler();
+});
+
+function traiterUn(fichier, fini){
+  var img = new Image();
+  // On lit d'abord les metadonnees : elles disent de quel appareil vient la
+  // photo, ce qui permet de ne jamais melanger deux cameras.
+  var lecteur = new FileReader();
+  lecteur.onload = function(){
+    try { fichier._exif = lireExif(lecteur.result); }
+    catch(err){ fichier._exif = null; }
+    img.src = URL.createObjectURL(fichier);
+  };
+  lecteur.onerror = function(){
+    fichier._exif = null;
+    img.src = URL.createObjectURL(fichier);
+  };
+  img.onload = function(){
+    var m = null;
+    try { m = analyser(img); } catch(err){ m = null; }
+    if (m) ajouter(m, fichier.name, fichier._exif);
+    afficher(m, fichier.name, fichier._exif);
+    URL.revokeObjectURL(img.src);
+    fini(m);
+  };
+  img.onerror = function(){ afficher(null, fichier.name); fini(null); };
+  lecteur.readAsArrayBuffer(fichier.slice(0, 262144));
+}
+
+document.getElementById("fichier").addEventListener("change", function(e){
+  var liste = Array.prototype.slice.call(e.target.files || []);
+  e.target.value = "";
+  if (!liste.length) return;
+  var zone = document.getElementById("progression");
+  var i = 0, retenues = 0;
+  function suivant(){
+    if (i >= liste.length){
+      zone.textContent = liste.length + " photo(s) analysée(s), "
+                       + retenues + " exploitable(s).";
+      recapituler();
+      return;
+    }
+    var f = liste[i];
+    zone.textContent = "Analyse " + (i + 1) + " sur " + liste.length
+                     + " — " + f.name;
+    /* Un setTimeout entre deux images laisse le navigateur redessiner : sans
+       lui, une serie de quarante photos figerait l'ecran du telephone
+       jusqu'au bout, et l'on croirait a un plantage. */
+    setTimeout(function(){
+      traiterUn(f, function(m){
+        if (m && m.nettete >= 0.15) retenues++;
+        i++;
+        suivant();
+      });
+    }, 20);
+  }
+  suivant();
+});
+
+/* L'EXPORT EST LE SEUL CHEMIN HORS DU NAVIGATEUR. Le stockage local ne
+   voyage pas : il reste sur cette machine et dans ce navigateur. Un fichier,
+   lui, se range avec le projet et se relit par n'importe quoi. */
+document.getElementById("exporterJournal").addEventListener("click", function(){
+  var note = document.getElementById("noteJournal");
+  var csv = journalEnCsv();
+  try {
+    var lien = document.createElement("a");
+    lien.href = URL.createObjectURL(
+      new Blob(["\ufeff" + csv], {type: "text/csv;charset=utf-8"}));
+    var d = new Date();
+    lien.download = "journal_banc_" + d.getFullYear()
+      + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2)
+      + ".csv";
+    document.body.appendChild(lien);
+    lien.click();
+    document.body.removeChild(lien);
+    note.textContent = "Fichier proposé au téléchargement. Rangez-le dans "
+      + "D:\\AVION_JAUNE\\Outil\\Rolling_shutter\\";
+  } catch (e){
+    /* Certains contextes interdisent le telechargement — une page ouverte
+       dans un cadre isole, par exemple. On ne laisse pas l'operateur sans
+       recours : le bouton Copier reste utilisable. */
+    note.textContent = "Le téléchargement a été refusé par le navigateur. "
+      + "Utilisez le bouton Copier, puis collez dans un fichier texte.";
+  }
+});
+
+document.getElementById("copierJournal").addEventListener("click", function(){
+  var note = document.getElementById("noteJournal");
+  var csv = journalEnCsv();
+  function replis(){
+    /* Sans accès au presse-papiers, on affiche le texte pour qu'il puisse
+       être sélectionné à la main. Mieux vaut un geste de plus que rien. */
+    note.innerHTML = "Presse-papiers indisponible. Voici le journal, à "
+      + "sélectionner et copier :<br><textarea readonly style=\"width:100%;"
+      + "height:120px;margin-top:6px;font-family:var(--mono);font-size:11px;"
+      + "background:#120f0c;color:var(--texte);border:1px solid var(--bord);"
+      + "border-radius:6px\">" + csv + "</textarea>";
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(csv).then(function(){
+      note.textContent = "Journal copié dans le presse-papiers.";
+    }, replis);
+  } else { replis(); }
+});
+
+document.getElementById("viderJournal").addEventListener("click", function(){
+  /* Pas de confirmation par boite de dialogue : elles bloquent la page et
+     l'on perd le fil. Un second appui, annoncé, fait le meme office. */
+  var b = document.getElementById("viderJournal");
+  if (b.dataset.arme !== "1"){
+    b.dataset.arme = "1";
+    b.textContent = "Confirmer — le journal sera perdu";
+    setTimeout(function(){
+      b.dataset.arme = ""; b.textContent = "Vider le journal";
+    }, 4000);
+    return;
+  }
+  ecrireJournal([]);
+  b.dataset.arme = ""; b.textContent = "Vider le journal";
+  document.getElementById("noteJournal").textContent = "Journal vidé.";
+  afficherJournal();
+});
+
+afficherJournal();
+
+document.getElementById("effacer").addEventListener("click", function(){
+  mesures = [];
+  document.getElementById("sortie").innerHTML = "";
+  document.getElementById("progression").textContent = "";
+  recapituler();
+});
+</script>

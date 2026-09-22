@@ -1,0 +1,10 @@
+horodatage;dossier;appareil;photos;retenues;expliquees;lecture_ms;dispersion_pct;ecart_median_pct;cadences_ms;pose_mediane_ms;verdict
+2026-09-20 10:47:22;boule_repetition;GoPro HERO4 Silver;78;65;65;26.89;1.44;0.19;2 1 0.6 0.25;1.64;cadences concordantes
+2026-09-20 10:48:14;boule;GoPro HERO4 Silver;60;51;50;26.88;1.60;0.35;2 1 0.6 0.25;1.61;cadences concordantes
+2026-09-27 20:48:33;seance_23_moyen;GoPro HERO4 Silver;125;106;96;18.29;0.74;0.16;2 1 0.6 0.25;1.42;cadences concordantes
+2026-09-27 20:50:12;seance_23_large;GoPro HERO4 Silver;121;84;84;27.01;1.17;0.23;2 1 0.6 0.25;1.54;cadences concordantes
+2026-09-28 18:02:35;seance_28_moyen_7mp;GoPro HERO4 Silver;249;219;184;18.29;2.90;0.70;2 1 0.6 0.25;0.68;cadences concordantes
+2026-09-28 18:02:35;seance_28_large_7mp;GoPro HERO4 Silver;109;105;95;26.86;1.40;0.20;2 1 0.6 0.25;0.62;cadences concordantes
+2026-09-28 18:02:35;seance_28_hero13_large;GoPro HERO13 Black;229;;;20.73;3.80;1.80;2 1 0.6 0.25;0.75;cadences concordantes
+2026-09-28 18:02:35;seance_28_hero13_lineaire;GoPro HERO13 Black;59;;;20.80;5.40;1.40;2 1 0.6 0.25;0.21;cadences concordantes
+2026-09-28 18:02:35;seance_28_hero13_lineaire_iso800;GoPro HERO13 Black;66;;;20.96;0.80;0.40;2 1 0.6 0.25;1.28;cadences concordantes

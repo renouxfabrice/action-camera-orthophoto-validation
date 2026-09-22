@@ -1,0 +1,21 @@
+Indicateur;Valeur;Critère d'interprétation
+Date du vol;24 septembre 2026;Essai unique
+Caméra et mode;GoPro HERO4 Silver, photo Time Lapse 1 s;Seule configuration validée par un vol
+Vecteur;DJI Matrice 600, multirotor;Ne vaut pas pour un avion léger
+Hauteur sol moyenne;46,7 m;Paramètre d'acquisition
+Vitesse sol moyenne;7,5 m/s;Paramètre d'acquisition
+Recouvrement longitudinal;90 %;Mesuré sur les images
+Recouvrement latéral;55 %;Consigne de planification, non mesurée
+GSD nominal au nadir;2,5 cm;Valeur calculée
+GSD moyen du bloc;2,7 cm;Valeur calculée
+Images alignées;226 sur 226;Un seul bloc, sans fragmentation
+Points de liaison;78 256;Résultat du traitement
+Points du nuage dense;18 500 000;Résultat du traitement
+Erreur de reprojection moyenne;2,0 px;Contrôle interne de l'ajustement
+Surface orthophotographique;2,89 ha;Emprise effectivement produite
+Écart planimétrique avant recalage;4,5 m;Exactitude absolue estimée sur quinze cibles
+Écart planimétrique maximal avant recalage;13,5 m;Idem
+Écart planimétrique après recalage;0,49 m;Résidu après transformation de similitude
+Erreur verticale;RMSE 5,11 m;Exactitude altimétrique estimée
+Biais vertical;−3,79 m;Idem
+Inclinaison médiane de la caméra;13,8°;La caméra suit l'assiette du vecteur
