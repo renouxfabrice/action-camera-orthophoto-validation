@@ -1,0 +1,33 @@
+{
+  "upload_type": "dataset",
+  "title": "Mesurer le temps de lecture d'une caméra d'action, et savoir si elle peut produire une orthophotographie",
+  "creators": [
+    {
+      "name": "Renoux, Fabrice",
+      "affiliation": "L'Avion Jaune"
+    }
+  ],
+  "description": "<p>Une caméra d'action coûte quelques centaines d'euros, une caméra de photogrammétrie plusieurs dizaines de milliers. Pour savoir si la première peut fournir un bloc d'images dont on tire une orthophotographie, il manque une valeur que les bases publiques ne donnent pas : le temps de lecture du capteur, dont OpenDroneMap a besoin pour corriger la déformation de l'obturateur déroulant.</p><p>Ce dépôt contient un banc de mesure reproductible — photographie d'une diode clignotant à fréquence connue, les bandes horizontales donnant la durée entre la lecture de la première et de la dernière ligne — son protocole, les programmes d'analyse, les journaux des sept séances et un échantillon de photographies permettant de retrouver chaque valeur.</p><p>Quatre valeurs mesurées : GoPro HERO4 Silver, 27,01 ms en champ large 12 Mpx, 18,29 ms en champ moyen 7 Mpx et 26,9 ms en Time Lapse ; GoPro HERO13 Black, 20,8 ms. Le temps de lecture suit le champ de vue employé à la prise de vue et non la définition du fichier : une valeur ne doit donc jamais être attribuée au seul nom commercial d'une caméra.</p><p>Un vol instrumenté du 24 septembre 2026 confronte le calcul au résultat : 226 images alignées en un seul bloc, orthophotographie de 2,89 ha, écart planimétrique de 4,5 m avant recalage et de 0,49 m après retrait d'une similitude — c'est le positionnement, et non la caméra, qui limite le résultat.</p>",
+  "access_right": "open",
+  "license": "mit",
+  "language": "fra",
+  "version": "1.0.0",
+  "keywords": [
+    "rolling shutter",
+    "sensor readout time",
+    "action camera",
+    "GoPro HERO4 Silver",
+    "GoPro HERO13 Black",
+    "photogrammetry",
+    "orthophoto",
+    "OpenDroneMap",
+    "UAV",
+    "drone mapping",
+    "reproducible protocol",
+    "measurement bench",
+    "rapid damage assessment",
+    "humanitarian response",
+    "remote sensing"
+  ],
+  "notes": "Le code et les textes sont sous licence MIT ; les photographies et les figures sont de l'auteur. Les séances complètes pèsent 5,7 Go et ne sont pas déposées : le dépôt porte un échantillon de dix photographies par série, suffisant pour retrouver chaque valeur publiée. La part prise par un outil d'intelligence artificielle dans la production du dépôt est décrite dans la section « Comment ce travail a été fait » du README."
+}

@@ -1,15 +1,43 @@
 cff-version: 1.2.0
-message: "If you use this repository, please cite it as below."
-title: "Action-camera orthophotography under rolling-shutter constraints"
+message: "Si vous utilisez ce dépôt, merci de le citer comme suit."
+title: "Mesurer le temps de lecture d'une caméra d'action, et savoir si elle peut produire une orthophotographie"
+abstract: >-
+  Banc de mesure reproductible du temps de lecture du capteur — l'obturateur
+  déroulant — d'une caméra d'action, par photographie d'une diode clignotant à
+  fréquence connue. Quatre valeurs mesurées, absentes des bases publiques et
+  nécessaires à OpenDroneMap : GoPro HERO4 Silver 27,01 ms en champ large
+  12 Mpx, 18,29 ms en champ moyen 7 Mpx et 26,9 ms en Time Lapse ; GoPro HERO13
+  Black 20,8 ms. Le temps de lecture suit le champ de vue employé à la prise de
+  vue et non la définition du fichier, ce qui interdit d'attribuer une valeur au
+  seul nom commercial d'une caméra. Un vol instrumenté du 24 septembre 2026
+  confronte le calcul au résultat : 226 images alignées en un seul bloc,
+  orthophotographie de 2,89 ha, écart planimétrique de 4,5 m avant recalage et
+  de 0,49 m après retrait d'une similitude. Le dépôt contient le banc, son
+  protocole, les programmes d'analyse, les journaux des sept séances et un
+  échantillon de photographies permettant de retrouver chaque valeur.
+type: dataset
 authors:
   - family-names: Renoux
     given-names: Fabrice
+    alias: renouxfabrice
     affiliation: "L'Avion Jaune"
-version: 0.1.0
-date-released: "2026-09-21"
+version: 1.0.0
+date-released: "2026-11-27"
 license: MIT
-repository-code: "https://github.com/action-camera-orthophoto-validation"
+repository-code: "https://github.com/renouxfabrice/action-camera-orthophoto-validation"
 keywords:
+  - rolling shutter
+  - sensor readout time
+  - action camera
+  - GoPro HERO4 Silver
+  - GoPro HERO13 Black
+  - photogrammetry
+  - orthophoto
+  - OpenDroneMap
+  - UAV
+  - drone mapping
+  - reproducible protocol
+  - measurement bench
   - rapid damage assessment
-  - remote sensing
   - humanitarian response
+  - remote sensing
