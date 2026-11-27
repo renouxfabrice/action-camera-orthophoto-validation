@@ -1,83 +1,122 @@
-# Mesurer le temps de lecture d'une caméra d'action, et savoir si elle peut produire une orthophotographie
+# Une GoPro peut-elle faire une orthophoto ? Mesurer le temps de lecture d'une caméra d'action
 
 **Language / Langue :** 🇬🇧 [English](README.en.md) · 🇫🇷 Français
 
-Une caméra d'action coûte quelques centaines d'euros, une chambre métrique
-plusieurs dizaines de milliers. L'écart ne tient pas qu'à la résolution : il
-tient à des garanties géométriques que la première n'offre pas d'emblée.
+## Le point de départ
 
-La question posée ici est étroite, et elle est technique :
+Une caméra d'action coûte quelques centaines d'euros, une caméra de
+photogrammétrie plusieurs dizaines de milliers. La différence ne tient pas
+seulement à la résolution : une caméra d'action ne donne pas d'emblée les
+garanties géométriques nécessaires pour faire une carte.
 
-> **une GoPro peut-elle acquérir un bloc d'images dont on tire une
-> orthophotographie, et dans quelles conditions ?**
+![Projection rectilinéaire et modèle fisheye](figures/rectilinear_versus_fisheye_gsd.png)
 
-Pour y répondre il faut un paramètre que les bases publiques ne donnent pas :
-le **temps de lecture du capteur**. OpenDroneMap, qui sait corriger la
-déformation de l'obturateur déroulant, ne dispose d'aucune valeur pour la
-HERO4 Silver ni pour la HERO13 Black. Reprendre celle d'un autre boîtier
-revient à supposer que deux capteurs se lisent de la même façon.
+**Figure 1 — Projection rectilinéaire et modèle fisheye : le GSD varie dans le
+champ.** Les valeurs 53 mm et 232 mm sont calculées pour la configuration
+représentée, non mesurées sur une orthophoto. Calculs de l'auteur.
 
-Ce dépôt contient donc un **banc de mesure**, son protocole, les programmes qui
-dépouillent les photographies, les valeurs obtenues, et le vol instrumenté qui
-confronte le calcul au résultat.
+La question de ce dépôt est donc simple :
 
-## Les valeurs mesurées
+> **une GoPro peut-elle prendre une série d'images dont on tire une orthophoto,
+> et dans quelles conditions ?**
 
-| Caméra | Mode de capture | Temps de lecture |
-|---|---|---|
-| GoPro HERO4 Silver | photo simple, champ large, 12 Mpx | **27,01 ms** |
-| GoPro HERO4 Silver | photo simple, champ moyen, 7 Mpx | **18,29 ms** |
-| GoPro HERO4 Silver | photo Time Lapse 1 s | **26,9 ms** |
-| GoPro HERO13 Black | photo Wide et Linear, 27 Mpx | **20,8 ms** |
+Pour y répondre, il manque une valeur que l'on ne trouve nulle part : le **temps
+de lecture du capteur**. La plupart des caméras d'action ne prennent pas toute
+l'image d'un coup : elles lisent le capteur ligne par ligne, de haut en bas
+(c'est l'obturateur déroulant, ou *rolling shutter*). Si la caméra bouge pendant
+cette lecture, l'image est déformée. OpenDroneMap sait corriger cette
+déformation, mais à condition de connaître le temps de lecture, et il n'a aucune
+valeur pour la HERO4 Silver ni pour la HERO13 Black. Prendre la valeur d'un
+autre modèle, c'est supposer que deux capteurs se lisent de la même façon.
 
-Le temps de lecture **suit le champ employé à la prise de vue, et non la
-définition du fichier** : en champ large, 12 et 7 Mpx donnent la même valeur à
-un demi pour cent près, alors que le champ moyen en retire un tiers. Une valeur
-ne doit donc jamais être attribuée au seul nom commercial d'une caméra.
+![Lecture simultanée ou successive du capteur](figures/rolling_shutter_theoretical_effect.png)
 
-## Le banc, dans votre navigateur
+**Figure 2 — Lecture simultanée ou successive du capteur.** À 36,1 m/s, une
+lecture de 26,82 ms correspond à 0,97 m de déplacement de la plateforme ; cette
+distance n'est pas l'erreur mesurée sur l'orthophoto. Schéma et calculs de
+l'auteur.
 
-👉 **[Ouvrir le banc](https://renouxfabrice.github.io/action-camera-rolling-shutter-bench/banc/)**
+J'ai donc construit un banc de mesure. Ce dépôt contient le banc, son protocole,
+les programmes qui analysent les photos, les valeurs obtenues, et un vol test
+qui vérifie le résultat en conditions réelles.
 
-Il ne demande aucune installation : il règle la cadence de la diode, guide la
-prise de vue, enregistre les mesures de la séance et tient le journal. La
-[fiche de terrain](banc/fiche_terrain.html) est sa version imprimable, pour
-quand l'écran n'est pas commode.
+## Le principe du banc
 
-## Le principe
-
-Une diode clignote à fréquence connue. Les lignes du capteur étant lues les
-unes après les autres, chacune enregistre un état différent de la diode :
-l'image porte des bandes horizontales dont on déduit la durée séparant la
-lecture de la première ligne de celle de la dernière.
+Une diode clignote à une fréquence connue. Comme les lignes du capteur sont lues
+les unes après les autres, chaque ligne voit la diode dans un état différent
+(allumée ou éteinte). La photo montre alors des bandes horizontales. En comptant
+les bandes sur la hauteur de l'image, on retrouve la durée entre la lecture de
+la première ligne et celle de la dernière :
 
 $$t_{\text{lecture}} = \frac{N}{f}$$
 
-où *N* est le nombre de bandes comptées sur la hauteur et *f* la fréquence de
-la diode. Le reste est affaire de conditions à respecter — et elles sont
-contre-intuitives, au point d'avoir coûté trois séries inexploitables avant la
-première mesure utilisable.
+où *N* est le nombre de bandes comptées sur la hauteur de l'image et *f* la
+fréquence de la diode.
 
-## Ce que contient le dépôt
+![Banc à diode vu par la caméra](figures/led_bench_seen_by_the_camera.jpg)
 
-| Dossier | Contenu |
-|---|---|
-| [`docs/methode.md`](docs/methode.md) | Le document complet : les cinq défauts d'une caméra d'action, la distorsion, l'obturateur déroulant, le domaine vitesse–hauteur et le vol de validation |
-| [`docs/annexes.md`](docs/annexes.md) | Les formules, et le protocole reproductible dans le détail — y compris les conditions dans lesquelles la mesure échoue |
-| [`banc/`](banc/) | L'outil de banc en HTML, la fiche de terrain, et le programme de la carte Arduino |
-| [`src/`](src/) | `mesurer_readout.py` lit le temps de lecture sur une photographie ; `balayage.py` retrouve après coup la cadence qui jouait ; `banc_gopro.py` pilote la caméra par wifi |
-| [`docs/protocols/`](docs/protocols/) | Chambre noire, réglages par génération de boîtier, et marche à suivre sur un modèle inconnu |
-| [`hardware/`](hardware/rolling_shutter_bench/) | Le montage de la carte et les deux croquis Arduino |
-| [`tables/`](tables/) | Les tableaux du document, au format CSV |
-| [`data/`](data/) | Les journaux des sept séances et un échantillon de douze photographies |
+**Figure 3 — Banc à diode pour mesurer le temps de lecture de la
+HERO4 Silver.** Les bandes lumineuses renseignent le décalage temporel entre les
+lignes du capteur ; protocole détaillé en
+[annexe B](docs/annexes.md#annexe-b--protocoles-de-mesure-reproductibles).
+Cliché de l'auteur.
 
-## Refaire une mesure
+Le principe est simple, mais les conditions pour que ça marche ne vont pas de
+soi : il m'a fallu trois séries ratées avant d'obtenir la première mesure
+utilisable.
 
-L'échantillon fourni couvre **les deux séances du 23 septembre 2026**,
-celles qui portent le résultat principal : même boîtier, deux champs. La carte
-y balayait seule ses quatre cadences, et `balayage.py` les retrouve par
-cohérence interne, sans qu'on ait à savoir laquelle jouait sur quelle
-photographie :
+## Ce que j'ai mesuré
+
+| Caméra | Mode de prise de vue | Temps de lecture |
+|---|---|---|
+| GoPro HERO4 Silver | photo unique, champ large, 12 Mpx | **27,01 ms** |
+| GoPro HERO4 Silver | photo unique, champ moyen, 7 Mpx | **18,29 ms** |
+| GoPro HERO4 Silver | Time Lapse 1 s | **26,9 ms** |
+| GoPro HERO13 Black | Wide et Linear, 27 Mpx | **20,8 ms** |
+
+Le résultat le plus important : **le temps de lecture dépend du champ de vue
+choisi, pas de la résolution du fichier.** En champ large, 12 Mpx et 7 Mpx
+donnent la même valeur à un demi pour cent près (27,01 et 26,86 ms). En champ
+moyen, on perd un tiers (18,29 ms) : le capteur ne lit alors qu'environ 68 % de
+sa hauteur, et la résolution n'est qu'une réduction faite après la lecture.
+
+À garder en tête : une valeur de temps de lecture ne doit jamais être donnée
+pour un modèle de caméra seul, sans préciser le mode de prise de vue.
+
+## Le banc, dans votre navigateur
+
+👉 **[Ouvrir le banc](https://renouxfabrice.github.io/action-camera-orthophoto-validation/banc/)**
+
+Rien à installer : le banc règle la cadence de la diode, guide la prise de vue,
+enregistre les mesures et tient le journal de la séance. La
+[fiche de terrain](banc/fiche_terrain.html) en est la version imprimable.
+
+## Trois choses à savoir avant de monter le banc
+
+**La diode doit être la seule lumière de la pièce.** En plein jour, la diode
+n'est qu'un objet blanc éclairé par le soleil, et aucune bande n'apparaît.
+
+**Il faut relever la sensibilité minimale, pas la baisser.** C'est le réglage le
+moins évident, et le plus important. Laissée en automatique, la caméra choisit
+un temps de pose long avec une sensibilité basse, ce qui efface les bandes. En
+lui interdisant de descendre sous 800 ISO, on l'oblige à raccourcir le temps de
+pose. Sur la HERO13 Black en mode linéaire, ce seul réglage fait passer l'écart
+entre les quatre cadences de 5,40 % à 0,80 %, soit sept fois mieux (voir le
+[tableau B.5](docs/annexes.md#b6-résultats-du-banc--les-campagnes-de-septembre-2026)).
+Ce n'est pas un effet du nombre de photos : la série la plus fournie est la
+moins bonne.
+
+**Un pic dans un spectre n'est pas forcément une bande.** Trois contrôles
+permettent de distinguer une vraie mesure d'un artefact ; ils sont décrits en
+[annexe B.1.2](docs/annexes.md#b12-les-trois-contrôles-qui-distinguent-une-mesure-dun-artefact).
+
+## Refaire les mesures
+
+Les séances complètes pèsent 5,7 Go et ne sont pas dans le dépôt. Il contient un
+échantillon de dix photos par série, ce qui suffit pour retrouver chaque valeur.
+Pendant les séances, la carte faisait défiler seule ses quatre cadences :
+`balayage.py` retrouve après coup la cadence utilisée pour chaque photo, sans
+qu'on ait besoin de la noter.
 
 ```bash
 python src/balayage.py data/echantillon/hero4_champ_large_12mpx
@@ -88,7 +127,7 @@ python src/balayage.py data/echantillon/hero13_lineaire_iso_auto
 python src/balayage.py data/echantillon/hero13_lineaire_iso800
 ```
 
-| échantillon | boîtier | configuration | vues | photos | séance | échantillon |
+| Échantillon | Caméra | Réglage | Vues | Photos | Séance complète | Échantillon |
 |---|---|---|---|---|---|---|
 | `hero4_champ_large_12mpx` | HERO4 Silver | large, 12 Mpx | — | 10 sur 121 | 27,01 ms | **26,9 ms** |
 | `hero4_champ_large_7mpx` | HERO4 Silver | large, 7 Mpx | `GOPR3806–3914` | 10 sur 109 | 26,86 ms | **26,9 ms** |
@@ -97,79 +136,73 @@ python src/balayage.py data/echantillon/hero13_lineaire_iso800
 | `hero13_lineaire_iso_auto` | HERO13 Black | linéaire, ISO auto | `GP010450–0508` | 10 sur 59 | 20,80 ms | **20,6 ms** |
 | `hero13_lineaire_iso800` | HERO13 Black | linéaire, ISO 800 | `GP010509–0574` | 10 sur 66 | 20,96 ms | **21,0 ms** |
 
-**Les deux démonstrations du banc se refont entièrement.**
+Les deux séances du 23 septembre 2026 portent le résultat principal (même
+caméra, deux champs de vue). Les deux démonstrations du banc, l'effet du champ
+de vue et l'effet de la sensibilité minimale, se refont entièrement avec cet
+échantillon.
 
-*Le champ commande, la définition non.* À champ large, passer de 12 à 7 Mpx ne
-déplace la lecture que d'un demi pour cent — 27,01 contre 26,86 ms. Passer au
-champ moyen en retire un tiers : 18,29 ms. Le champ moyen lit donc environ 68 %
-de la hauteur du capteur, et la définition n'est qu'un sous-échantillonnage
-appliqué après la lecture.
+> **L'horloge de la HERO13 n'était pas réglée** : toutes ses photos sont datées
+> du 5 janvier 2016. Les trois séries se distinguent donc par les numéros de
+> vues indiqués dans le tableau.
 
-*La sensibilité minimale forcée est le levier décisif.* Les deux séries HERO13
-en linéaire ne diffèrent que par ce réglage. Sur les séances complètes, l'accord
-entre les quatre cadences passe de **5,40 %** en automatique à **0,80 %** avec
-l'ISO minimum forcé à 800 — sept fois mieux, et ce n'est pas un effet du nombre
-de photographies, la série la plus fournie étant la moins bonne.
+Une seule séance est incomplète : la HERO13 Black en champ Wide. La carte
+mémoire ne contient que 70 photos sur 229 (vues 0377 à 0446) ; les 159 premières
+sont perdues. Les 70 disponibles donnent 20,8 ms, et le journal de séance
+indiquait 20,73 ms sur les 229.
 
-> **L'horloge du HERO13 n'était pas réglée** : ses clichés portent tous la date
-> du 5 janvier 2016. Les trois séries ne se séparent donc ni par la date ni par
-> les écarts de temps, mais par les bornes de vues données ci-dessus.
+## Le vol test : ce qu'il montre, et ce qu'il ne montre pas
 
-## Trois choses à savoir avant de monter le banc
+Le 24 septembre 2026, une HERO4 Silver en Time Lapse d'une seconde a volé sous
+un drone DJI Matrice 600. Les 226 images ont été assemblées en un seul bloc, et
+le traitement a produit une orthophoto de 2,89 ha.
 
-**La source qui clignote doit être la seule lumière de la pièce.** En plein
-jour, une diode n'est qu'un objet blanc éclairé par le soleil : aucune bande
-n'apparaîtra, quelle que soit la qualité de l'analyse.
+Sur la position, l'écart avec les points mesurés au sol est de **4,5 m** avant
+recalage. Mais après une simple correction de position, d'orientation et
+d'échelle (une similitude), il ne reste que **0,49 m**. Autrement dit, le bloc
+d'images est bien plus cohérent que ce que laisse penser son positionnement :
+c'est le positionnement, et non la caméra, qui limite le résultat.
 
-**Il faut relever la sensibilité minimale, pas l'abaisser.** C'est le levier le
-moins évident, et le plus décisif. À exposition égale, l'appareil choisit
-spontanément une pose longue à sensibilité basse — exactement ce qui efface les
-bandes. Lui interdire de descendre sous 800 ISO ne lui laisse que l'obturateur
-pour compenser. Le [tableau B.5](docs/annexes.md#b6-résultats-du-banc--les-campagnes-de-septembre-2026)
-le démontre : à configuration identique, ce seul réglage fait passer l'accord
-entre cadences de 5,40 % à 0,80 %.
+![Flou de bougé selon la vitesse et le temps de pose](figures/motion_blur_versus_speed_and_exposure.png)
 
-**Un maximum dans un spectre n'est pas une bande.** Trois contrôles le
-distinguent d'un artefact, et ils sont décrits en
-[annexe B.1.2](docs/annexes.md#b12-les-trois-contrôles-qui-distinguent-une-mesure-dun-artefact).
+**Figure 4 — Flou de bougé en fonction de la vitesse et du temps de pose.** La
+ligne horizontale à un pixel marque le seuil au-delà duquel le déplacement
+pendant la pose commence à effacer le détail que le GSD laisse espérer.
 
-## Ce que le vol de validation établit, et ce qu'il n'établit pas
+Ce vol ne valide ni la HERO13 Black, ni la MISSION 1 PRO ILS, ni l'usage en
+avion léger. Les vitesses et hauteurs de vol calculées pour les autres modes
+restent des hypothèses à tester en vol.
 
-Un vol instrumenté du 24 septembre 2026, avec une HERO4 Silver en Time Lapse
-d'une seconde sur un DJI Matrice 600, a aligné **226 images sur 226** en un seul
-bloc et produit une orthophoto de 2,89 ha. L'écart planimétrique absolu est de
-**4,5 m** avant recalage ; après retrait d'une transformation de similitude, le
-résidu tombe à **0,49 m**.
+## Ce que contient le dépôt
 
-Autrement dit : **le bloc est géométriquement cohérent bien au-delà de ce que
-son géoréférencement absolu laisse croire.** C'est le positionnement, et non la
-caméra, qui limite le résultat.
+| Dossier | Contenu |
+|---|---|
+| [`docs/methode.md`](docs/methode.md) | Le document complet : les cinq défauts d'une caméra d'action, la distorsion, l'obturateur déroulant, les vitesses et hauteurs de vol possibles, et le vol test |
+| [`docs/annexes.md`](docs/annexes.md) | Les formules et le protocole détaillé, y compris les cas où la mesure échoue |
+| [`banc/`](banc/) | Le banc en HTML, la fiche de terrain et le programme de la carte Arduino |
+| [`src/`](src/) | `mesurer_readout.py` mesure le temps de lecture sur une photo ; `balayage.py` retrouve la cadence utilisée ; `banc_gopro.py` pilote la caméra en wifi |
+| [`docs/protocols/`](docs/protocols/) | Chambre noire, réglages selon la génération de caméra, et méthode pour un modèle inconnu |
+| [`hardware/`](hardware/rolling_shutter_bench/) | Le montage de la carte et les deux programmes Arduino |
+| [`tables/`](tables/) | Les tableaux du document, en CSV |
+| [`data/`](data/) | Les journaux des sept séances et l'échantillon de photos |
 
-Cela ne valide ni la HERO13 Black, ni la MISSION 1 PRO ILS, ni l'emploi sur un
-avion léger. Les domaines vitesse–hauteur calculés pour les autres modes sont
-des hypothèses à éprouver, non des certificats de compatibilité.
+## Comment ce travail a été fait
 
-## Ce que ce dépôt ne contient pas
+J'ai conçu le banc, fait les mesures, le vol test et les vérifications. Pour
+écrire et corriger le code, analyser les données et rédiger la documentation, je
+me suis fait aider par un outil d'intelligence artificielle, Claude (Anthropic).
+J'ai relu le code et les textes, et les valeurs publiées se retrouvent à partir
+de l'échantillon fourni. Les erreurs qui resteraient sont les miennes :
+n'hésitez pas à les signaler.
 
-Une seule séance du tableau B.5 reste incomplète : la **HERO13 Black
-en champ Wide**. La carte n'en porte que 70 clichés sur 229 — les vues 0377 à
-0446 — et les 159 premières restent introuvables. Les 70 disponibles donnent
-20,8 ms ; le journal rapporte 20,73 ms sur les 229.
-
-Toutes les autres séances sont complètes et reproductibles.
-
-Les séances entières ne sont pas embarquées ici : elles pèsent 5,7 Go. Le dépôt
-n'en porte qu'un échantillon de dix clichés par série, ce qui suffit à
-retrouver chaque valeur.
 ## Licence
 
-Code et textes sous licence [MIT](LICENSE). Les photographies et les figures
-sont de l'auteur.
+Le code est sous licence [MIT](LICENSE). Les photos et les figures sont de
+l'auteur.
 
 ## Contact
 
 **Fabrice Renoux** — [@renouxfabrice](https://github.com/renouxfabrice)
 
-Pour signaler une erreur ou proposer une mesure sur un autre boîtier, le plus
+Pour signaler une erreur ou proposer une mesure sur une autre caméra, le plus
 simple est d'ouvrir une *issue*. Les temps de lecture d'autres caméras sont les
-bienvenus : c'est précisément ce qui manque aux bases publiques.
+bienvenus : c'est justement ce qui manque aujourd'hui.

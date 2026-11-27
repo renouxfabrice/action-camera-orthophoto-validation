@@ -1,83 +1,118 @@
-# Measuring an action camera's sensor readout time, and finding out whether it can produce an orthophoto
+# Can a GoPro make an orthophoto? Measuring the readout time of an action camera
 
 **Language / Langue :** 🇬🇧 English · 🇫🇷 [Français](README.md)
 
-An action camera costs a few hundred euros, a metric camera several tens of
-thousands. The gap is not only about resolution: it is about geometric
-guarantees that the first does not offer out of the box.
+## The starting point
 
-The question asked here is narrow, and technical:
+An action camera costs a few hundred euros, a photogrammetric camera several
+tens of thousands. The difference is not only resolution: an action camera does
+not come with the geometric guarantees that mapping requires.
 
-> **can a GoPro acquire an image block from which an orthophoto can be
-> produced, and under what conditions?**
+![Rectilinear projection and fisheye model](figures/rectilinear_versus_fisheye_gsd.png)
 
-Answering it requires a parameter that public databases do not provide: the
-**sensor readout time**. OpenDroneMap, which can correct rolling-shutter
-distortion, holds no value for the HERO4 Silver or the HERO13 Black. Borrowing
-one from another body amounts to assuming that two sensors are read the same
-way.
+**Figure 1 — Rectilinear projection and fisheye model: GSD varies across the
+field.** The values 53 mm and 232 mm are computed for the configuration shown,
+not measured on an orthophoto. Author's calculations.
 
-This repository therefore contains a **measurement bench**, its protocol, the
-programs that analyse the photographs, the values obtained, and the
-instrumented flight that confronts the calculation with the result.
+The question this repository asks is therefore a simple one:
 
-## The measured values
+> **can a GoPro take a series of images from which an orthophoto can be
+> derived, and under what conditions?**
 
-| Camera | Capture mode | Readout time |
-|---|---|---|
-| GoPro HERO4 Silver | single photo, wide field, 12 MP | **27.01 ms** |
-| GoPro HERO4 Silver | single photo, medium field, 7 MP | **18.29 ms** |
-| GoPro HERO4 Silver | Time Lapse photo, 1 s | **26.9 ms** |
-| GoPro HERO13 Black | Wide and Linear photo, 27 MP | **20.8 ms** |
+Answering it needs a value that is nowhere to be found: the **sensor readout
+time**. Most action cameras do not capture the whole image at once: they read
+the sensor line by line, from top to bottom — the rolling shutter. If the camera
+moves during that readout, the image is distorted. OpenDroneMap can correct that
+distortion, but only if it knows the readout time, and it holds no value for the
+HERO4 Silver or the HERO13 Black. Borrowing another model's value assumes that
+two sensors are read the same way.
 
-Readout time **follows the field of view used at capture, not the file
-resolution**: at wide field, 12 and 7 MP give the same value to within half a
-per cent, whereas the medium field removes a third of it. A value must
-therefore never be attributed to a camera's commercial name alone.
+![Simultaneous or successive reading of the sensor](figures/rolling_shutter_theoretical_effect.png)
 
-## The bench, in your browser
+**Figure 2 — Simultaneous or successive reading of the sensor.** At 36.1 m/s, a
+26.82 ms readout corresponds to 0.97 m of platform displacement; this distance
+is not the error measured on the orthophoto. Author's diagram and calculations.
 
-👉 **[Open the bench](https://renouxfabrice.github.io/action-camera-rolling-shutter-bench/banc/)**
+So I built a measurement bench. This repository holds the bench, its protocol,
+the programs that analyse the photographs, the values obtained, and a test
+flight that checks the result under real conditions.
 
-It needs no installation: it sets the LED rate, guides the shot, records the
-session's measurements and keeps the log. The
-[field sheet](banc/fiche_terrain.html) is its printable version, for when a
-screen is not convenient.
+## How the bench works
 
-## The principle
-
-An LED flashes at a known frequency. Since the sensor's lines are read one
-after another, each records a different state of the LED: the image carries
-horizontal bands from which the time separating the reading of the first line
-from that of the last can be derived.
+An LED blinks at a known frequency. Because the sensor's lines are read one
+after another, each line sees the LED in a different state, on or off. The
+photograph then shows horizontal bands. Counting the bands over the height of
+the image gives the time between the reading of the first line and that of the
+last:
 
 $$t_{\text{readout}} = \frac{N}{f}$$
 
-where *N* is the number of bands counted over the image height and *f* the LED
-frequency. The rest is a matter of conditions to respect — and they are
-counter-intuitive, to the point of having cost three unusable series before the
-first usable measurement.
+where *N* is the number of bands counted over the height of the image and *f*
+the frequency of the LED.
 
-## What the repository contains
+![LED bench as seen by the camera](figures/led_bench_seen_by_the_camera.jpg)
 
-| Folder | Contents |
-|---|---|
-| [`docs/methode.en.md`](docs/methode.en.md) | The full document: the five weaknesses of an action camera, distortion, rolling shutter, the speed–height envelope and the validation flight |
-| [`docs/annexes.en.md`](docs/annexes.en.md) | The formulas, and the reproducible protocol in detail — including the conditions under which the measurement fails |
-| [`banc/`](banc/) | The HTML bench tool, the field sheet, and the Arduino sketch |
-| [`src/`](src/) | `mesurer_readout.py` reads the readout time from a photograph; `balayage.py` recovers which rate was playing; `banc_gopro.py` drives the camera over wifi |
-| [`docs/protocols/`](docs/protocols/) | Darkroom, settings by camera generation, and what to do with an unknown model |
-| [`hardware/`](hardware/rolling_shutter_bench/) | The board rig and the two Arduino sketches |
-| [`tables/`](tables/) | The document's tables, in CSV |
-| [`data/`](data/) | The logs of the seven sessions and a sample of twelve photographs |
+**Figure 3 — LED bench for measuring the readout time of the HERO4 Silver.**
+The light bands give the time offset between the sensor's lines; detailed
+protocol in
+[annexe B](docs/annexes.en.md#annexe-b--protocoles-de-mesure-reproductibles).
+Author's photograph.
 
-## Redoing a measurement
+The principle is simple, but the conditions under which it works are not
+obvious: it took me three failed series before the first usable measurement.
 
-The sample provided covers **the two sessions of 23 September 2026**, the
-ones that carry the headline result: same body, two fields of view. The board
-swept its four rates on its own, and `balayage.py` recovers them by internal
-consistency, without anyone having to know which one was playing on which
-photograph:
+## What I measured
+
+| Camera | Capture mode | Readout time |
+|---|---|---|
+| GoPro HERO4 Silver | single photo, wide field, 12 Mpx | **27.01 ms** |
+| GoPro HERO4 Silver | single photo, medium field, 7 Mpx | **18.29 ms** |
+| GoPro HERO4 Silver | Time Lapse 1 s | **26.9 ms** |
+| GoPro HERO13 Black | Wide and Linear, 27 Mpx | **20.8 ms** |
+
+The most important result: **the readout time follows the field of view
+selected, not the resolution of the file.** In wide field, 12 Mpx and 7 Mpx give
+the same value to within half a per cent (27.01 and 26.86 ms). In medium field,
+a third is lost (18.29 ms): the sensor then reads only about 68 % of its height,
+and the resolution is merely a downsampling applied after the readout.
+
+Worth remembering: a readout time should never be quoted for a camera model
+alone, without stating the capture mode.
+
+## The bench, in your browser
+
+👉 **[Open the bench](https://renouxfabrice.github.io/action-camera-orthophoto-validation/banc/)**
+
+Nothing to install: the bench sets the LED frequency, guides the shooting,
+records the measurements and keeps the session log. The
+[field sheet](banc/fiche_terrain.html) is its printable version.
+
+## Three things to know before building the bench
+
+**The LED must be the only light in the room.** In daylight, the LED is just a
+white object lit by the sun, and no band appears.
+
+**You must raise the minimum sensitivity, not lower it.** This is the least
+obvious setting, and the most important. Left on automatic, the camera picks a
+long exposure at low sensitivity, which wipes out the bands. Forbidding it to go
+below 800 ISO forces it to shorten the exposure. On the HERO13 Black in linear
+mode, this setting alone takes the spread between the four frequencies from
+5.40 % to 0.80 %, seven times better (see
+[table B.5](docs/annexes.en.md#b6-résultats-du-banc--les-campagnes-de-septembre-2026)).
+This is not an effect of the number of photographs: the largest series is the
+worst one.
+
+**A peak in a spectrum is not necessarily a band.** Three checks tell a real
+measurement from an artefact; they are described in
+[annexe B.1.2](docs/annexes.en.md#b12-les-trois-contrôles-qui-distinguent-une-mesure-dun-artefact).
+
+## Redoing the measurements
+
+The full sessions weigh 5.7 GB and are not in the repository. It holds a sample
+of ten photographs per series, which is enough to recover every value. During
+the sessions the board cycled through its four frequencies on its own:
+`balayage.py` recovers afterwards which frequency applied to each photograph,
+with no need to have written it down.
 
 ```bash
 python src/balayage.py data/echantillon/hero4_champ_large_12mpx
@@ -88,87 +123,81 @@ python src/balayage.py data/echantillon/hero13_lineaire_iso_auto
 python src/balayage.py data/echantillon/hero13_lineaire_iso800
 ```
 
-| sample | camera | configuration | frames | photos | session | sample |
+| Sample | Camera | Setting | Frames | Photos | Full session | Sample |
 |---|---|---|---|---|---|---|
-| `hero4_champ_large_12mpx` | HERO4 Silver | wide, 12 MP | — | 10 of 121 | 27.01 ms | **26.9 ms** |
-| `hero4_champ_large_7mpx` | HERO4 Silver | wide, 7 MP | `GOPR3806–3914` | 10 of 109 | 26.86 ms | **26.9 ms** |
-| `hero4_champ_moyen_7mpx` | HERO4 Silver | medium, 7 MP | `GOPR3557–3805` | 10 of 249 | 18.29 ms | **18.3 ms** |
-| `hero13_wide` | HERO13 Black | Wide, 27 MP | `GP010377–0446` | 10 of 70 | 20.73 ms | **20.8 ms** |
-| `hero13_lineaire_iso_auto` | HERO13 Black | Linear, auto ISO | `GP010450–0508` | 10 of 59 | 20.80 ms | **20.6 ms** |
-| `hero13_lineaire_iso800` | HERO13 Black | Linear, ISO 800 | `GP010509–0574` | 10 of 66 | 20.96 ms | **21.0 ms** |
+| `hero4_champ_large_12mpx` | HERO4 Silver | wide, 12 Mpx | — | 10 of 121 | 27.01 ms | **26.9 ms** |
+| `hero4_champ_large_7mpx` | HERO4 Silver | wide, 7 Mpx | `GOPR3806–3914` | 10 of 109 | 26.86 ms | **26.9 ms** |
+| `hero4_champ_moyen_7mpx` | HERO4 Silver | medium, 7 Mpx | `GOPR3557–3805` | 10 of 249 | 18.29 ms | **18.3 ms** |
+| `hero13_wide` | HERO13 Black | Wide, 27 Mpx | `GP010377–0446` | 10 of 70 | 20.73 ms | **20.8 ms** |
+| `hero13_lineaire_iso_auto` | HERO13 Black | linear, ISO auto | `GP010450–0508` | 10 of 59 | 20.80 ms | **20.6 ms** |
+| `hero13_lineaire_iso800` | HERO13 Black | linear, ISO 800 | `GP010509–0574` | 10 of 66 | 20.96 ms | **21.0 ms** |
 
-**Both of the bench's demonstrations can be redone in full.**
+The two sessions of 23 September 2026 carry the main result: same camera, two
+fields of view. Both demonstrations of the bench — the effect of the field of
+view and the effect of the minimum sensitivity — can be redone in full from this
+sample.
 
-*The field of view governs, the resolution does not.* At wide field, going from
-12 to 7 MP shifts the readout by only half a per cent — 27.01 against 26.86 ms.
-Moving to the medium field removes a third of it: 18.29 ms. The medium field
-therefore reads about 68 % of the sensor height, and resolution is merely a
-subsampling applied after the read.
+> **The HERO13's clock was not set**: all its photographs are dated 5 January
+> 2016. The three series are therefore told apart by the frame numbers given in
+> the table.
 
-*Forcing the minimum sensitivity is the decisive lever.* The two HERO13 Linear
-series differ by that setting alone. On the full sessions, the agreement between
-the four rates goes from **5.40 %** at automatic sensitivity to **0.80 %** with
-the minimum ISO forced to 800 — seven times better, and not an effect of the
-number of photographs, since the larger series is the poorer one.
+One session only is incomplete: the HERO13 Black in Wide field. The memory card
+holds just 70 photographs out of 229 (frames 0377 to 0446); the first 159 are
+lost. The 70 available give 20.8 ms, and the session log recorded 20.73 ms over
+the 229.
 
-> **The HERO13's clock was not set**: its images all carry the date 5 January
-> 2016. The three series are therefore separated neither by date nor by time
-> gaps, but by the frame ranges given above.
+## The test flight: what it shows, and what it does not
 
-## Three things to know before building the bench
+On 24 September 2026, a HERO4 Silver in one-second Time Lapse flew under a DJI
+Matrice 600 drone. The 226 images were assembled into a single block, and the
+processing produced an orthophoto covering 2.89 ha.
 
-**The flashing source must be the only light in the room.** In daylight an LED
-is merely a white object lit by the sun: no band will appear, whatever the
-quality of the analysis.
+In position, the gap against the points surveyed on the ground is **4.5 m**
+before registration. But after a simple correction of position, orientation and
+scale — a similarity transform — only **0.49 m** remains. In other words, the
+block of images is far more consistent than its positioning suggests: it is the
+positioning, not the camera, that limits the result.
 
-**The minimum sensitivity must be raised, not lowered.** This is the least
-obvious lever, and the most decisive. At equal exposure the camera
-spontaneously chooses a long shutter at low sensitivity — exactly what erases
-the bands. Forbidding it to go below ISO 800 leaves it only the shutter to
-compensate with. [Table B.5](docs/annexes.en.md) demonstrates it: at identical
-configuration, this single setting takes the agreement between rates from
-5.40 % to 0.80 %.
+![Motion blur as a function of speed and exposure time](figures/motion_blur_versus_speed_and_exposure.png)
 
-**A maximum in a spectrum is not a band.** Three checks distinguish it from an
-artefact, and they are described in annexe B.1.2.
+**Figure 4 — Motion blur as a function of speed and exposure time.** The
+horizontal line at one pixel marks the threshold beyond which displacement
+during exposure begins to erase the detail the GSD leads one to expect.
 
-## What the validation flight establishes, and what it does not
+This flight validates neither the HERO13 Black, nor the MISSION 1 PRO ILS, nor
+use aboard a light aircraft. The flight speeds and heights computed for the
+other modes remain hypotheses to be tested in flight.
 
-An instrumented flight on 24 September 2026, with a HERO4 Silver in one-second
-Time Lapse on a DJI Matrice 600, aligned **226 images out of 226** in a single
-block and produced a 2.89 ha orthophoto. The absolute planimetric deviation is
-**4.5 m** before registration; after removing a similarity transformation, the
-residual falls to **0.49 m**.
+## What the repository holds
 
-In other words: **the block is geometrically consistent well beyond what its
-absolute georeferencing suggests.** It is the positioning, not the camera, that
-limits the result.
+| Folder | Contents |
+|---|---|
+| [`docs/methode.md`](docs/methode.md) | The full document: the five weaknesses of an action camera, distortion, the rolling shutter, the possible flight speeds and heights, and the test flight |
+| [`docs/annexes.md`](docs/annexes.md) | The formulas and the detailed protocol, including the cases where the measurement fails |
+| [`banc/`](banc/) | The bench in HTML, the field sheet and the Arduino board program |
+| [`src/`](src/) | `mesurer_readout.py` measures the readout time on a photograph; `balayage.py` recovers the frequency used; `banc_gopro.py` drives the camera over wifi |
+| [`docs/protocols/`](docs/protocols/) | Dark room, settings by camera generation, and a method for an unknown model |
+| [`hardware/`](hardware/rolling_shutter_bench/) | The board wiring and the two Arduino sketches |
+| [`tables/`](tables/) | The tables of the document, as CSV |
+| [`data/`](data/) | The logs of the seven sessions and the photograph sample |
 
-This validates neither the HERO13 Black, nor the MISSION 1 PRO ILS, nor use on
-a light aircraft. The speed–height envelopes computed for the other modes are
-hypotheses to be tested, not certificates of compatibility.
+## How this work was done
 
-## What this repository does not contain
+I designed the bench, took the measurements, flew the test flight and ran the
+checks. To write and fix the code, analyse the data and draft the documentation,
+I was assisted by an artificial intelligence tool, Claude (Anthropic). I
+reviewed the code and the text, and the published values can be recovered from
+the sample provided. Any remaining errors are mine: please do report them.
 
-Only one session in table B.5 remains incomplete: the **HERO13 Black
-in Wide field**. The card holds only 70 of its 229 images — frames 0377 to
-0446 — and the first 159 remain untraceable. The 70 available give 20.8 ms; the
-log reports 20.73 ms over the 229.
-
-All the other sessions are complete and reproducible.
-
-The complete sessions are not shipped here: they weigh 5.7 GB. The repository
-carries only a sample of ten images per series, which is enough to recover each
-value.
 ## Licence
 
-Code and texts under the [MIT](LICENSE) licence. The photographs and figures
-are the author's.
+The code is under the [MIT](LICENSE) licence. The photographs and the figures
+are the author's own.
 
 ## Contact
 
 **Fabrice Renoux** — [@renouxfabrice](https://github.com/renouxfabrice)
 
-To report an error or propose a measurement on another body, the simplest route
-is to open an issue. Readout times for other cameras are welcome: that is
-precisely what public databases lack.
+To report an error or offer a measurement on another camera, the simplest way is
+to open an issue. Readout times for other cameras are very welcome: that is
+precisely what is missing today.
